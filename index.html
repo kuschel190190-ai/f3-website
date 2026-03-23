@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>F³ – The Next Vibe</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --black: #060608;
+      --deep: #0a0a10;
+      --card: #0f0f18;
+      --pink: #e91e8c;
+      --cyan: #00d4ff;
+      --orange: #ff6b1a;
+      --purple: #9b27d4;
+      --white: #f4f0ff;
+      --muted: #6a6580;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--black); color: var(--white); font-family: 'Rajdhani', sans-serif; font-weight: 400; overflow-x: hidden; }
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: var(--black); }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(var(--pink), var(--cyan)); }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1.2rem 3rem;
+      background: rgba(6,6,8,0.85); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(233,30,140,0.15);
+    }
+    .nav-logo img { height: 50px; filter: drop-shadow(0 0 12px rgba(233,30,140,0.6)); }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.85rem; letter-spacing: 0.2em; text-transform: uppercase; transition: color 0.3s; font-weight: 500; }
+    .nav-links a:hover { color: var(--cyan); text-shadow: 0 0 10px var(--cyan); }
+    .nav-cta { padding: 0.6rem 1.8rem; border: 1px solid var(--pink) !important; color: var(--pink) !important; border-radius: 2px; }
+    .nav-cta:hover { background: rgba(233,30,140,0.15) !important; box-shadow: 0 0 20px rgba(233,30,140,0.4) !important; text-shadow: none !important; }
+
+    .hero {
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      position: relative; overflow: hidden; padding: 6rem 2rem 4rem; text-align: center;
+    }
+    .hero-banner { position: absolute; inset: 0; background: url('F3-Banner.png') center center / cover no-repeat; opacity: 0.55; }
+    .hero-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(6,6,8,0.3) 0%, rgba(6,6,8,0.1) 40%, rgba(6,6,8,0.85) 100%); }
+    .hero-content { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; }
+    .hero-logo { width: min(300px, 55vw); margin-bottom: 2rem; filter: drop-shadow(0 0 40px rgba(233,30,140,0.5)) drop-shadow(0 0 80px rgba(0,212,255,0.3)); animation: logoFloat 4s ease-in-out infinite; }
+    @keyframes logoFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    .hero-tagline { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.5rem, 4vw, 3rem); letter-spacing: 0.3em; background: linear-gradient(90deg, var(--pink), var(--white), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 1rem; opacity: 0; animation: fadeUp 1s 0.5s forwards; }
+    .hero-sub { font-size: 1.1rem; color: rgba(244,240,255,0.65); max-width: 560px; line-height: 1.7; letter-spacing: 0.05em; margin-bottom: 3rem; opacity: 0; animation: fadeUp 1s 0.8s forwards; }
+    .hero-buttons { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; opacity: 0; animation: fadeUp 1s 1.1s forwards; }
+
+    .btn-neon { display: inline-block; padding: 0.9rem 2.5rem; font-family: 'Rajdhani', sans-serif; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; text-decoration: none; border-radius: 2px; transition: all 0.3s; cursor: pointer; border: none; }
+    .btn-pink { background: var(--pink); color: white; box-shadow: 0 0 20px rgba(233,30,140,0.4); }
+    .btn-pink:hover { background: #ff2da0; box-shadow: 0 0 40px rgba(233,30,140,0.7); transform: translateY(-2px); }
+    .btn-outline-cyan { background: transparent; color: var(--cyan); border: 1px solid var(--cyan); box-shadow: 0 0 10px rgba(0,212,255,0.2); }
+    .btn-outline-cyan:hover { background: rgba(0,212,255,0.1); box-shadow: 0 0 30px rgba(0,212,255,0.5); transform: translateY(-2px); }
+
+    .scroll-hint { position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%); z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; opacity: 0.4; animation: bounce 2s infinite; }
+    .scroll-hint span { font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--muted); }
+    .scroll-hint::after { content: ''; width: 1px; height: 40px; background: linear-gradient(to bottom, var(--pink), transparent); }
+    @keyframes bounce { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(8px); } }
+
+    section { padding: 7rem 4rem; }
+    .section-label { font-size: 0.7rem; letter-spacing: 0.4em; text-transform: uppercase; color: var(--pink); margin-bottom: 0.8rem; display: flex; align-items: center; gap: 1rem; }
+    .section-label::before { content: ''; width: 30px; height: 1px; background: var(--pink); box-shadow: 0 0 8px var(--pink); }
+    .section-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.5rem, 5vw, 4.5rem); letter-spacing: 0.05em; line-height: 1; margin-bottom: 1.5rem; }
+    .gradient-text { background: linear-gradient(90deg, var(--pink), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+    .events { background: var(--deep); }
+    .events-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+    .event-card { background: var(--card); border: 1px solid rgba(233,30,140,0.2); border-radius: 4px; padding: 2rem; position: relative; overflow: hidden; transition: border-color 0.3s, transform 0.3s; text-decoration: none; color: var(--white); display: block; }
+    .event-card:hover { border-color: var(--pink); transform: translateY(-4px); }
+    .event-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--pink), var(--cyan)); opacity: 0; transition: opacity 0.3s; }
+    .event-card:hover::after { opacity: 1; }
+    .event-date { font-size: 0.75rem; letter-spacing: 0.2em; color: var(--cyan); text-transform: uppercase; margin-bottom: 0.8rem; }
+    .event-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 0.05em; margin-bottom: 0.8rem; }
+    .event-desc { font-size: 0.9rem; color: var(--muted); line-height: 1.6; margin-bottom: 1.5rem; }
+    .event-tag { display: inline-block; padding: 0.25rem 0.75rem; font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; border: 1px solid rgba(233,30,140,0.4); color: var(--pink); border-radius: 2px; }
+
+    .about { background: var(--black); display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; align-items: center; }
+    .about p { color: var(--muted); line-height: 1.8; font-size: 1rem; margin-bottom: 1.2rem; letter-spacing: 0.03em; }
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
+    .stat-box { background: var(--card); padding: 2rem; border: 1px solid rgba(255,255,255,0.04); position: relative; overflow: hidden; transition: border-color 0.3s; }
+    .stat-box:hover { border-color: rgba(233,30,140,0.4); }
+    .stat-box::before { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--pink), var(--purple)); }
+    .stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 3.5rem; background: linear-gradient(135deg, var(--pink), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; }
+    .stat-lbl { font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-top: 0.4rem; }
+
+    .concept { background: var(--deep); }
+    .concept-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 3rem; }
+    .concept-card { background: var(--card); border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; padding: 2.5rem 2rem; transition: border-color 0.3s, transform 0.3s; }
+    .concept-card:hover { border-color: rgba(0,212,255,0.4); transform: translateY(-4px); }
+    .concept-icon { font-size: 2.5rem; margin-bottom: 1.5rem; }
+    .concept-card h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 0.05em; margin-bottom: 0.8rem; color: var(--cyan); }
+    .concept-card p { font-size: 0.95rem; color: var(--muted); line-height: 1.7; }
+
+    .process { background: var(--black); }
+    .process-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin-top: 3rem; background: rgba(255,255,255,0.05); }
+    .step { background: var(--black); padding: 3rem 2.5rem; text-align: center; transition: background 0.3s; }
+    .step:hover { background: var(--card); }
+    .step-num { width: 64px; height: 64px; border-radius: 50%; border: 1px solid var(--pink); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; color: var(--pink); box-shadow: 0 0 20px rgba(233,30,140,0.3); transition: background 0.3s, box-shadow 0.3s; }
+    .step:hover .step-num { background: var(--pink); color: white; box-shadow: 0 0 40px rgba(233,30,140,0.6); }
+    .step h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 0.05em; margin-bottom: 1rem; }
+    .step p { font-size: 0.95rem; color: var(--muted); line-height: 1.7; }
+
+    .values { background: var(--deep); }
+    .values-list { margin-top: 3rem; display: flex; flex-direction: column; gap: 1px; }
+    .value-row { display: grid; grid-template-columns: 60px 200px 1fr; align-items: center; gap: 2rem; padding: 2rem 2.5rem; background: var(--card); border-left: 3px solid transparent; transition: border-color 0.3s, background 0.3s; }
+    .value-row:hover { border-color: var(--pink); background: #111118; }
+    .value-idx { font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; color: rgba(233,30,140,0.25); }
+    .value-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 0.05em; }
+    .value-desc { font-size: 0.95rem; color: var(--muted); line-height: 1.6; }
+
+    .quote-section { background: var(--black); padding: 8rem 4rem; text-align: center; position: relative; overflow: hidden; }
+    blockquote { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.8rem, 3.5vw, 3rem); letter-spacing: 0.05em; line-height: 1.3; max-width: 850px; margin: 0 auto; position: relative; z-index: 1; }
+    blockquote em { font-style: normal; background: linear-gradient(90deg, var(--pink), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .quote-author { margin-top: 2rem; font-size: 0.75rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--muted); }
+
+    .cta-section { background: var(--deep); padding: 9rem 4rem; text-align: center; position: relative; overflow: hidden; }
+    .cta-glow { position: absolute; width: 600px; height: 600px; border-radius: 50%; background: radial-gradient(circle, rgba(233,30,140,0.12), transparent 70%); top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; }
+    .cta-section .section-title { font-size: clamp(3rem, 7vw, 6rem); position: relative; z-index: 1; }
+    .cta-section p { color: var(--muted); max-width: 480px; margin: 1.5rem auto 3rem; position: relative; z-index: 1; line-height: 1.8; font-size: 1rem; letter-spacing: 0.04em; }
+    .cta-btns { display: flex; justify-content: center; gap: 1.5rem; position: relative; z-index: 1; flex-wrap: wrap; }
+
+    footer { background: var(--black); padding: 3rem 4rem; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(233,30,140,0.15); flex-wrap: wrap; gap: 1.5rem; }
+    .footer-logo img { height: 40px; opacity: 0.8; }
+    .footer-links { display: flex; gap: 2rem; list-style: none; flex-wrap: wrap; }
+    .footer-links a { color: var(--muted); text-decoration: none; font-size: 0.8rem; letter-spacing: 0.15em; text-transform: uppercase; transition: color 0.3s; }
+    .footer-links a:hover { color: var(--pink); }
+    .footer-copy { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.1em; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    @media (max-width: 900px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      section { padding: 5rem 1.5rem; }
+      .about { grid-template-columns: 1fr; gap: 3rem; }
+      .concept-grid { grid-template-columns: 1fr; }
+      .process-steps { grid-template-columns: 1fr; }
+      .value-row { grid-template-columns: 1fr; gap: 0.3rem; padding: 1.5rem; }
+      footer { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="#" class="nav-logo"><img src="F3-Logo.png" alt="F³" /></a>
+    <ul class="nav-links">
+      <li><a href="#events">Events</a></li>
+      <li><a href="#about">Über uns</a></li>
+      <li><a href="#concept">Konzept</a></li>
+      <li><a href="#process">Bewerbung</a></li>
+      <li><a href="https://www.joyclub.de/party/13140845.f3.html" target="_blank" class="nav-cta">Joyclub</a></li>
+    </ul>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-banner"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <img src="F3-Logo.png" alt="F³ Logo" class="hero-logo" />
+      <p class="hero-tagline">The Next Vibe</p>
+      <p class="hero-sub">Selected Souls. Wild Nights. One Energy.<br>F³ ist die exklusive Einladung an Menschen, die denselben Vibe fühlen – offen, respektvoll, intensiv.</p>
+      <div class="hero-buttons">
+        <a href="https://www.joyclub.de/party/13140845.f3.html" target="_blank" class="btn-neon btn-pink">Jetzt bewerben</a>
+        <a href="#events" class="btn-neon btn-outline-cyan">Unsere Events</a>
+      </div>
+    </div>
+    <div class="scroll-hint"><span>Scroll</span></div>
+  </section>
+
+  <section class="events" id="events">
+    <div class="reveal">
+      <p class="section-label">Kommende Nächte</p>
+      <h2 class="section-title">Entdecke unsere <span class="gradient-text">Events</span></h2>
+    </div>
+    <div class="events-grid">
+      <a href="https://www.joyclub.de/event/1790852.friendsfuckfriends_cum_to_our_birthday_geheim.html" target="_blank" class="event-card reveal">
+        <div class="event-date">24.01.2026</div>
+        <div class="event-title">F³ Birthday-Bash</div>
+        <div class="event-desc">FriendsFuckFriends – Cum to our Birthday. Eine Nacht, die Geschichte schreibt. 35 Ladies, 45 Gentlemen.</div>
+        <span class="event-tag">Geheim-Event</span>
+      </a>
+      <a href="https://www.joyclub.de/event/1797771.friendsfuckfriends_cum_in_2026_frankfurt_am_main.html" target="_blank" class="event-card reveal">
+        <div class="event-date">31.12.2025</div>
+        <div class="event-title">Silvester 2025</div>
+        <div class="event-desc">Frankfurt Vibe – Cum in 2026. Das neue Jahr beginnt, wie es weitermachen soll: wild, frei, unvergesslich.</div>
+        <span class="event-tag">Frankfurt</span>
+      </a>
+      <a href="https://www.joyclub.de/party/13140845.f3.html" target="_blank" class="event-card reveal">
+        <div class="event-date">04.04.2026</div>
+        <div class="event-title">F³ Wülfrath</div>
+        <div class="event-desc">Der nächste Vibe kommt. Bewirb dich jetzt und sicher dir deinen Platz für eine unvergessliche Nacht.</div>
+        <span class="event-tag">Coming Soon</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="about" id="about">
+    <div class="reveal">
+      <p class="section-label">Über F³</p>
+      <h2 class="section-title">Friends.<br>Fun.<br><span class="gradient-text">Freedom.</span></h2>
+      <p>F³ ist die persönliche Spielwiese von Tobias & Friends – entstanden aus dem Wunsch, jenseits von 08/15-Partys Räume zu schaffen, in denen Menschen sich echt, frei und respektvoll begegnen können.</p>
+      <p>Keine Massen-Events, keine Zufallsgäste – F³ steht für Vibes statt Masse, für Qualität statt Quantität, für echte Begegnungen statt oberflächlicher Kontakte.</p>
+      <a href="https://www.joyclub.de/party/13140845.f3.html" target="_blank" class="btn-neon btn-pink" style="margin-top:2rem; display:inline-block;">F³ auf Joyclub</a>
+    </div>
+    <div class="stats-grid reveal">
+      <div class="stat-box"><div class="stat-num">35</div><div class="stat-lbl">Ladies<br>inkl. Paare</div></div>
+      <div class="stat-box"><div class="stat-num">45</div><div class="stat-lbl">Gentlemen<br>leichter HÜ</div></div>
+      <div class="stat-box"><div class="stat-num">100%</div><div class="stat-lbl">Handverlesene<br>Gäste</div></div>
+      <div class="stat-box"><div class="stat-num">0</div><div class="stat-lbl">Toleranz für<br>Übergriffe</div></div>
+    </div>
+  </section>
+
+  <section class="concept" id="concept">
+    <div class="reveal">
+      <p class="section-label">Das Konzept</p>
+      <h2 class="section-title">Kein Standard.<br><span class="gradient-text">Nur Vibes.</span></h2>
+    </div>
+    <div class="concept-grid">
+      <div class="concept-card reveal">
+        <div class="concept-icon">👥</div>
+        <h3>Handverlesener Gästemix</h3>
+        <p>Leichter Herrenüberschuss – den Ladies soll nicht langweilig werden. Nur Menschen, die harmonieren: Paare, Solo-Ladys, entspannte Gentlemen.</p>
+      </div>
+      <div class="concept-card reveal">
+        <div class="concept-icon">💜</div>
+        <h3>Ladies' Choice</h3>
+        <p>Der Gästemix ist das Herz jeder Nacht. Die Ladies entscheiden mit – demokratisch, fair und mit Stil. Mindestens 5 Stimmen oder 50% Ja.</p>
+      </div>
+      <div class="concept-card reveal">
+        <div class="concept-icon">🛡️</div>
+        <h3>Safe Space</h3>
+        <p>F³ fühlt sich an wie ein privater, sicherer Raum: offen, sinnlich, intensiv – aber nie übergriffig. Null Toleranz für Grenzüberschreitungen.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="process" id="process">
+    <div class="reveal">
+      <p class="section-label">Bewerbungsprozess</p>
+      <h2 class="section-title">So wirst du<br><span class="gradient-text">Teil von F³.</span></h2>
+    </div>
+    <div class="process-steps">
+      <div class="step reveal">
+        <div class="step-num">01</div>
+        <h3>Bewerbung</h3>
+        <p>Mit Gesichtsfoto und kurzen, authentischen Zeilen zu Vibe und Erwartungen – wir wollen wissen, wer du bist.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">02</div>
+        <h3>Ladies Voting</h3>
+        <p>Mindestens 5 Frauen oder 50% der Ladies stimmen mit „Ja" – kein Veto einer Lady gegen Person oder Paar.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">03</div>
+        <h3>Bestätigung</h3>
+        <p>Fixer Platz erst nach Zahlung – so bleibt die Planung verlässlich für alle Beteiligten.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="values" id="values">
+    <div class="reveal">
+      <p class="section-label">Unsere Werte</p>
+      <h2 class="section-title">Was F³ <span class="gradient-text">ausmacht.</span></h2>
+    </div>
+    <div class="values-list">
+      <div class="value-row reveal"><div class="value-idx">01</div><div class="value-name">Authentizität</div><div class="value-desc">Menschen, die zurückstrahlen. Direkt, ehrlich, wild – keine Angst vor Echtheit. Tanzen, lachen, feiern, lieben – ohne Masken.</div></div>
+      <div class="value-row reveal"><div class="value-idx">02</div><div class="value-name">Klare Grenzen</div><div class="value-desc">Nein ist Nein – immer und ohne Ausnahme. Bei F³ weiß jeder, wo die Linie verläuft, und das schafft echte Freiheit.</div></div>
+      <div class="value-row reveal"><div class="value-idx">03</div><div class="value-name">Humor & Leichtigkeit</div><div class="value-desc">F³ lebt von Humor, Spontanität und Leichtigkeit. Wir nehmen uns ernst, aber nicht zu ernst.</div></div>
+      <div class="value-row reveal"><div class="value-idx">04</div><div class="value-name">Verantwortung</div><div class="value-desc">Jeder trägt Verantwortung für die Atmosphäre – bewusster Umgang mit Gesundheit, Grenzen und Wohlbefinden.</div></div>
+    </div>
+  </section>
+
+  <div class="quote-section reveal">
+    <blockquote>„Mit mir landest du nicht mal eben in der Kiste –<br>du musst erst den <em>Vibe catchen.</em>"</blockquote>
+    <p class="quote-author">— Tobias, Gründer von F³</p>
+  </div>
+
+  <section class="cta-section">
+    <div class="cta-glow"></div>
+    <p class="section-label" style="justify-content:center;">Bereit?</p>
+    <h2 class="section-title reveal">Ready für den<br><span class="gradient-text">nächsten Vibe?</span></h2>
+    <p class="reveal">F³ ist nicht für jeden. Aber vielleicht bist du einer von uns. Werde Teil einer Community, die Freiheit, Freundschaft und unvergessliche Momente zelebriert.</p>
+    <div class="cta-btns reveal">
+      <a href="https://www.joyclub.de/party/13140845.f3.html" target="_blank" class="btn-neon btn-pink">Jetzt auf Joyclub</a>
+      <a href="mailto:tobi.kuschel@web.de" class="btn-neon btn-outline-cyan">Mail an Tobi</a>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-logo"><img src="F3-Logo.png" alt="F³" /></div>
+    <ul class="footer-links">
+      <li><a href="https://www.joyclub.de/party/13140845.f3.html" target="_blank">Joyclub</a></li>
+      <li><a href="https://www.instagram.com" target="_blank">Instagram</a></li>
+      <li><a href="mailto:tobi.kuschel@web.de">Kontakt</a></li>
+    </ul>
+    <p class="footer-copy">© 2026 F³ – The Next Vibe</p>
+  </footer>
+
+  <script>
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 60);
+        }
+      });
+    }, { threshold: 0.1 });
+    reveals.forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
