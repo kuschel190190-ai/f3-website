@@ -69,6 +69,7 @@
     .section-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.5rem, 5vw, 4.5rem); letter-spacing: 0.05em; line-height: 1; margin-bottom: 1.5rem; }
     .gradient-text { background: linear-gradient(90deg, var(--pink), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
+    /* EVENTS */
     .events { background: var(--deep); }
     .events-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
     .event-card { background: var(--card); border: 1px solid rgba(233,30,140,0.2); border-radius: 4px; padding: 2rem; position: relative; overflow: hidden; transition: border-color 0.3s, transform 0.3s; text-decoration: none; color: var(--white); display: block; }
@@ -80,6 +81,37 @@
     .event-desc { font-size: 0.9rem; color: var(--muted); line-height: 1.6; margin-bottom: 1.5rem; }
     .event-tag { display: inline-block; padding: 0.25rem 0.75rem; font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; border: 1px solid rgba(233,30,140,0.4); color: var(--pink); border-radius: 2px; }
 
+    /* ARCHIVE */
+    .archive { background: var(--black); padding: 4rem; }
+    .archive-toggle { background: none; border: 1px solid rgba(255,255,255,0.08); color: var(--muted); padding: 0.8rem 2rem; font-family: 'Rajdhani', sans-serif; font-size: 0.8rem; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; border-radius: 2px; margin-top: 2rem; transition: all 0.3s; display: flex; align-items: center; gap: 0.75rem; }
+    .archive-toggle:hover { border-color: rgba(233,30,140,0.3); color: var(--white); }
+    .archive-toggle .arrow { transition: transform 0.3s; display: inline-block; }
+    .archive-toggle.open .arrow { transform: rotate(180deg); }
+    .archive-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; display: none; }
+    .archive-grid.open { display: grid; }
+    .event-card.archived { opacity: 0.55; border-color: rgba(255,255,255,0.06); }
+    .event-card.archived:hover { opacity: 0.8; border-color: rgba(233,30,140,0.3); }
+    .event-tag.past { border-color: rgba(106,101,128,0.4); color: var(--muted); }
+
+    /* REVIEWS */
+    .reviews { background: var(--deep); }
+    .reviews-header { display: flex; align-items: center; gap: 3rem; margin-bottom: 3rem; flex-wrap: wrap; }
+    .reviews-score { text-align: center; }
+    .reviews-score .big-num { font-family: 'Bebas Neue', sans-serif; font-size: 5rem; line-height: 1; background: linear-gradient(135deg, var(--pink), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .reviews-score .stars { font-size: 1.4rem; letter-spacing: 0.1em; color: #f5a623; margin: 0.2rem 0; }
+    .reviews-score .count { font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+    .reviews-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.2rem; }
+    .review-card { background: var(--card); border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; padding: 1.5rem; transition: border-color 0.3s; position: relative; }
+    .review-card:hover { border-color: rgba(233,30,140,0.25); }
+    .review-card::before { content: '"'; position: absolute; top: 1rem; right: 1.5rem; font-family: 'Bebas Neue', sans-serif; font-size: 4rem; color: rgba(233,30,140,0.08); line-height: 1; }
+    .review-stars { color: #f5a623; font-size: 0.85rem; margin-bottom: 0.6rem; }
+    .review-text { font-size: 0.95rem; color: rgba(244,240,255,0.75); line-height: 1.6; margin-bottom: 1rem; font-style: italic; }
+    .review-meta { font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+    .reviews-cta { margin-top: 2.5rem; text-align: center; }
+    .reviews-cta a { color: var(--pink); text-decoration: none; font-size: 0.8rem; letter-spacing: 0.2em; text-transform: uppercase; border-bottom: 1px solid rgba(233,30,140,0.3); padding-bottom: 2px; transition: border-color 0.3s; }
+    .reviews-cta a:hover { border-color: var(--pink); }
+
+    /* ABOUT */
     .about { background: var(--black); display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; align-items: center; }
     .about p { color: var(--muted); line-height: 1.8; font-size: 1rem; margin-bottom: 1.2rem; letter-spacing: 0.03em; }
     .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
@@ -136,15 +168,88 @@
     .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.7s ease, transform 0.7s ease; }
     .reveal.visible { opacity: 1; transform: none; }
 
+    /* CHATBOT */
+    #chat-btn {
+      position: fixed; bottom: 2rem; right: 2rem; z-index: 999;
+      width: 60px; height: 60px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      border: none; cursor: pointer;
+      box-shadow: 0 0 20px rgba(233,30,140,0.5), 0 4px 20px rgba(0,0,0,0.4);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; transition: transform 0.3s, box-shadow 0.3s;
+    }
+    #chat-btn:hover { transform: scale(1.1); box-shadow: 0 0 35px rgba(233,30,140,0.7); }
+    #chat-btn .badge {
+      position: absolute; top: -4px; right: -4px;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--cyan); font-size: 0.6rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--black); border: 2px solid var(--black);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2)} }
+
+    #chat-window {
+      position: fixed; bottom: 6rem; right: 2rem; z-index: 998;
+      width: 360px; max-height: 520px;
+      background: var(--card); border: 1px solid rgba(233,30,140,0.3);
+      border-radius: 8px; display: none; flex-direction: column;
+      box-shadow: 0 0 40px rgba(0,0,0,0.6), 0 0 20px rgba(233,30,140,0.15);
+      overflow: hidden;
+    }
+    #chat-window.open { display: flex; animation: chatSlideUp 0.3s ease forwards; }
+    @keyframes chatSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    .chat-header {
+      padding: 1rem 1.2rem; background: linear-gradient(90deg, rgba(233,30,140,0.15), rgba(0,212,255,0.05));
+      border-bottom: 1px solid rgba(233,30,140,0.2);
+      display: flex; align-items: center; gap: 0.8rem;
+    }
+    .chat-header-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      display: flex; align-items: center; justify-content: center; font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .chat-header-info { flex: 1; }
+    .chat-header-name { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: 0.08em; }
+    .chat-header-status { font-size: 0.7rem; color: var(--cyan); letter-spacing: 0.1em; }
+    .chat-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1.1rem; padding: 0.2rem; transition: color 0.2s; }
+    .chat-close:hover { color: var(--white); }
+
+    .chat-messages {
+      flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.8rem;
+      scrollbar-width: thin; scrollbar-color: rgba(233,30,140,0.3) transparent;
+    }
+    .chat-msg { max-width: 85%; padding: 0.7rem 1rem; border-radius: 4px; font-size: 0.9rem; line-height: 1.5; }
+    .chat-msg.bot { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.06); color: var(--white); align-self: flex-start; white-space: pre-wrap; }
+    .chat-msg.user { background: rgba(233,30,140,0.15); border: 1px solid rgba(233,30,140,0.25); color: var(--white); align-self: flex-end; }
+    .chat-msg a { color: var(--cyan); text-decoration: none; }
+    .chat-msg a:hover { text-decoration: underline; }
+
+    .chat-suggestions { padding: 0.5rem 1rem; display: flex; flex-wrap: wrap; gap: 0.4rem; border-top: 1px solid rgba(255,255,255,0.04); }
+    .chat-chip { background: rgba(233,30,140,0.08); border: 1px solid rgba(233,30,140,0.2); color: var(--pink); font-size: 0.72rem; letter-spacing: 0.1em; padding: 0.3rem 0.7rem; border-radius: 20px; cursor: pointer; font-family: 'Rajdhani', sans-serif; transition: all 0.2s; white-space: nowrap; }
+    .chat-chip:hover { background: rgba(233,30,140,0.2); border-color: var(--pink); }
+
+    .chat-input-row { padding: 0.8rem 1rem; border-top: 1px solid rgba(255,255,255,0.06); display: flex; gap: 0.6rem; }
+    #chat-input { flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; padding: 0.55rem 0.8rem; color: var(--white); font-family: 'Rajdhani', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+    #chat-input:focus { border-color: rgba(233,30,140,0.5); }
+    #chat-input::placeholder { color: var(--muted); }
+    #chat-send { background: var(--pink); border: none; border-radius: 3px; padding: 0.55rem 1rem; color: white; cursor: pointer; font-size: 0.9rem; transition: background 0.2s; }
+    #chat-send:hover { background: #ff2da0; }
+
     @media (max-width: 900px) {
       nav { padding: 1rem 1.5rem; }
       .nav-links { display: none; }
       section { padding: 5rem 1.5rem; }
+      .archive { padding: 3rem 1.5rem; }
       .about { grid-template-columns: 1fr; gap: 3rem; }
       .concept-grid { grid-template-columns: 1fr; }
       .process-steps { grid-template-columns: 1fr; }
       .value-row { grid-template-columns: 1fr; gap: 0.3rem; padding: 1.5rem; }
       footer { flex-direction: column; text-align: center; }
+      #chat-window { width: calc(100vw - 2rem); right: 1rem; bottom: 5.5rem; }
+      #chat-btn { right: 1rem; bottom: 1rem; }
     }
   </style>
 </head>
@@ -154,6 +259,7 @@
     <a href="#" class="nav-logo"><img src="F3-Logo.png" alt="F³" /></a>
     <ul class="nav-links">
       <li><a href="#events">Events</a></li>
+      <li><a href="#reviews">Bewertungen</a></li>
       <li><a href="#about">Über uns</a></li>
       <li><a href="#concept">Konzept</a></li>
       <li><a href="#process">Bewerbung</a></li>
@@ -176,26 +282,15 @@
     <div class="scroll-hint"><span>Scroll</span></div>
   </section>
 
+  <!-- UPCOMING EVENTS -->
   <section class="events" id="events">
     <div class="reveal">
       <p class="section-label">Kommende Nächte</p>
       <h2 class="section-title">Entdecke unsere <span class="gradient-text">Events</span></h2>
     </div>
     <div class="events-grid">
-      <a href="https://www.joyclub.de/event/1797771.friendsfuckfriends_cum_in_2026_frankfurt_am_main.html" target="_blank" class="event-card reveal">
-        <div class="event-date">31.12.2025</div>
-        <div class="event-title">Silvester 2025</div>
-        <div class="event-desc">Frankfurt Vibe – Cum in 2026. Das neue Jahr beginnt, wie es weitermachen soll: wild, frei, unvergesslich.</div>
-        <span class="event-tag">Frankfurt</span>
-      </a>
-      <a href="https://www.joyclub.de/event/1790852.friendsfuckfriends_cum_to_our_birthday_geheim.html" target="_blank" class="event-card reveal">
-        <div class="event-date">24.01.2026</div>
-        <div class="event-title">F³ Birthday-Bash</div>
-        <div class="event-desc">FriendsFuckFriends – Cum to our Birthday. Eine Nacht, die Geschichte schreibt. 35 Ladies, 45 Gentlemen.</div>
-        <span class="event-tag">Geheim-Event</span>
-      </a>
       <a href="https://www.joyclub.de/party/13140845.f3.html" target="_blank" class="event-card reveal">
-        <div class="event-date">04.04.2026</div>
+        <div class="event-date">04.04.2026 · Wülfrath</div>
         <div class="event-title">F³ Wülfrath</div>
         <div class="event-desc">Der nächste Vibe kommt. Bewirb dich jetzt und sicher dir deinen Platz für eine unvergessliche Nacht.</div>
         <span class="event-tag">Coming Soon</span>
@@ -218,6 +313,88 @@
         <div class="event-desc">Hot'n Dirty Week – 5 Tage Luxusvilla auf Mallorca. Exklusiv für 12 ausgewählte Gäste. Friends · Fun · Freedom pur.</div>
         <span class="event-tag">Mallorca</span>
       </a>
+    </div>
+  </section>
+
+  <!-- ARCHIVE -->
+  <div class="archive reveal" id="archive">
+    <p class="section-label">Vergangene Events</p>
+    <button class="archive-toggle" id="archiveBtn">
+      <span>Archiv anzeigen</span><span class="arrow">▼</span>
+    </button>
+    <div class="archive-grid" id="archiveGrid">
+      <a href="https://www.joyclub.de/event/1797771.friendsfuckfriends_cum_in_2026_frankfurt_am_main.html" target="_blank" class="event-card archived">
+        <div class="event-date">31.12.2025 · Frankfurt</div>
+        <div class="event-title">Silvester 2025</div>
+        <div class="event-desc">Frankfurt Vibe – Cum in 2026. Das neue Jahr beginnt, wie es weitermachen soll: wild, frei, unvergesslich.</div>
+        <span class="event-tag past">Abgeschlossen</span>
+      </a>
+      <a href="https://www.joyclub.de/event/1790852.friendsfuckfriends_cum_to_our_birthday_geheim.html" target="_blank" class="event-card archived">
+        <div class="event-date">24.01.2026 · Geheim-Location</div>
+        <div class="event-title">F³ Birthday-Bash</div>
+        <div class="event-desc">FriendsFuckFriends – Cum to our Birthday. Eine Nacht, die Geschichte schreibt. 35 Ladies, 45 Gentlemen.</div>
+        <span class="event-tag past">Abgeschlossen</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- REVIEWS -->
+  <section class="reviews" id="reviews">
+    <div class="reveal">
+      <p class="section-label">Echte Stimmen</p>
+      <h2 class="section-title">Was Gäste <span class="gradient-text">sagen.</span></h2>
+    </div>
+    <div class="reviews-header reveal">
+      <div class="reviews-score">
+        <div class="big-num">5.0</div>
+        <div class="stars">★★★★★</div>
+        <div class="count">77 Bewertungen auf Joyclub</div>
+      </div>
+    </div>
+    <div class="reviews-grid">
+      <div class="review-card reveal">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">Gute Gästeliste, gute Stimmung, gut gefickt – was will man mehr</p>
+        <div class="review-meta">Birthday Party · Feb 2026</div>
+      </div>
+      <div class="review-card reveal">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">Die Cum to our Birthday Party war einfach 🔥. Tolle Gäste, die Location, sexy Vibes</p>
+        <div class="review-meta">Birthday Party · Jan 2026</div>
+      </div>
+      <div class="review-card reveal">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">Heiße Gäste, tolles Ambiente und jede Menge Action. Super organisiert</p>
+        <div class="review-meta">Birthday Party · Jan 2026</div>
+      </div>
+      <div class="review-card reveal">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">Super Location, coole Leute und definitiv ein unvergesslicher Abend</p>
+        <div class="review-meta">Birthday Party · Jan 2026</div>
+      </div>
+      <div class="review-card reveal">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">Eine sehr gelungene Party ⭐️ – Konzept eingehalten, Stimmung top</p>
+        <div class="review-meta">Birthday Party · Jan 2026</div>
+      </div>
+      <div class="review-card reveal">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">Top Gäste, Top Orga, Top Stimmung, Top Party</p>
+        <div class="review-meta">Birthday Party · Jan 2026</div>
+      </div>
+      <div class="review-card reveal">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">Es war wieder super! Sehr viele schöne und nette Menschen</p>
+        <div class="review-meta">Birthday Party · Jan 2026</div>
+      </div>
+      <div class="review-card reveal">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">Coole Leute, gute Vibes, starke Party</p>
+        <div class="review-meta">Birthday Party · Jan 2026</div>
+      </div>
+    </div>
+    <div class="reviews-cta reveal">
+      <a href="https://www.joyclub.de/party/erfahrungen/13140845.f3.html" target="_blank">Alle 77 Bewertungen auf Joyclub lesen →</a>
     </div>
   </section>
 
@@ -324,7 +501,39 @@
     <p class="footer-copy">© 2026 F³ – The Next Vibe</p>
   </footer>
 
+  <!-- CHATBOT WIDGET -->
+  <button id="chat-btn" aria-label="Chat öffnen">
+    💬
+    <span class="badge">?</span>
+  </button>
+
+  <div id="chat-window" role="dialog" aria-label="F³ Assistent">
+    <div class="chat-header">
+      <div class="chat-header-avatar">🔥</div>
+      <div class="chat-header-info">
+        <div class="chat-header-name">F³ Assistent</div>
+        <div class="chat-header-status">● Online – Frag mich alles</div>
+      </div>
+      <button class="chat-close" id="chat-close" aria-label="Schließen">✕</button>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-msg bot">Hey! Ich bin der F³ Assistent 🔥<br><br>Ich beantworte dir alle Fragen rund um unsere Events, das Voting und den Bewerbungsprozess. Was möchtest du wissen?</div>
+    </div>
+    <div class="chat-suggestions" id="chat-chips">
+      <button class="chat-chip" data-q="Wie funktioniert das Voting?">Wie läuft Voting?</button>
+      <button class="chat-chip" data-q="Was kosten die Events?">Preise</button>
+      <button class="chat-chip" data-q="Welche Events gibt es?">Nächste Events</button>
+      <button class="chat-chip" data-q="Wie bewerbe ich mich?">Bewerbung</button>
+      <button class="chat-chip" data-q="Was ist das Mallorca Event?">Mallorca</button>
+    </div>
+    <div class="chat-input-row">
+      <input type="text" id="chat-input" placeholder="Deine Frage..." autocomplete="off" />
+      <button id="chat-send">➤</button>
+    </div>
+  </div>
+
   <script>
+    // Scroll reveal
     const reveals = document.querySelectorAll('.reveal');
     const observer = new IntersectionObserver(entries => {
       entries.forEach((entry, i) => {
@@ -334,6 +543,152 @@
       });
     }, { threshold: 0.1 });
     reveals.forEach(el => observer.observe(el));
+
+    // Archive toggle
+    document.getElementById('archiveBtn').addEventListener('click', function() {
+      const grid = document.getElementById('archiveGrid');
+      const isOpen = grid.classList.toggle('open');
+      this.classList.toggle('open', isOpen);
+      this.querySelector('span:first-child').textContent = isOpen ? 'Archiv ausblenden' : 'Archiv anzeigen';
+    });
+
+    // Chatbot
+    const chatBtn = document.getElementById('chat-btn');
+    const chatWindow = document.getElementById('chat-window');
+    const chatClose = document.getElementById('chat-close');
+    const chatMessages = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    const chatSend = document.getElementById('chat-send');
+
+    chatBtn.addEventListener('click', () => {
+      chatWindow.classList.toggle('open');
+      if (chatWindow.classList.contains('open')) {
+        chatBtn.querySelector('.badge').style.display = 'none';
+        chatInput.focus();
+      }
+    });
+    chatClose.addEventListener('click', () => chatWindow.classList.remove('open'));
+
+    document.getElementById('chat-chips').addEventListener('click', e => {
+      const chip = e.target.closest('.chat-chip');
+      if (chip) handleUserMessage(chip.dataset.q);
+    });
+    chatSend.addEventListener('click', () => {
+      const txt = chatInput.value.trim();
+      if (txt) { handleUserMessage(txt); chatInput.value = ''; }
+    });
+    chatInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { const txt = chatInput.value.trim(); if (txt) { handleUserMessage(txt); chatInput.value = ''; } }
+    });
+
+    const kb = [
+      {
+        keys: ['voting', 'abstimmung', 'vote', 'stimmen', 'ladies choice', 'wahl', 'abstimmen'],
+        answer: `Das Ladies' Choice Voting funktioniert so:\n\n👥 Alle angemeldeten Damen stimmen über jede Bewerbung (Männer & Paare) ab.\n✅ Du brauchst mindestens 5 Ja-Stimmen ODER die Zustimmung von 50% der Ladies.\n🚫 Ein einzelnes Veto kann dich nicht ausschließen.\n\nDas Voting läuft direkt über Joyclub nach deiner Bewerbung.`
+      },
+      {
+        keys: ['bewerben', 'bewerbung', 'anmelden', 'teilnehmen', 'mitmachen', 'wie komme ich'],
+        answer: `So läuft die Bewerbung:\n\n1️⃣ Profil auf Joyclub.de erstellen\n2️⃣ Aktuelles Gesichtsfoto hochladen\n3️⃣ Ein paar authentische Zeilen zu dir & deinen Erwartungen\n4️⃣ Ladies' Voting abwarten\n5️⃣ Bei Zusage: Platz durch Zahlung fixieren\n\n👉 joyclub.de/party/13140845.f3.html`
+      },
+      {
+        keys: ['preis', 'kosten', 'eintritt', 'ticket', 'zahlen', 'euro', 'wie viel', 'wieviel', 'teuer'],
+        answer: `Preise variieren je nach Event:\n\n🎉 Wülfrath / Cum in May:\nFrauen €45 (€35 Premium)\nMänner €85 (€75 Premium)\nPaare €89 (€79 Premium)\n\n🔥 Friendly Fucks Ulm:\nFrauen €45 | Männer €90 | Paare €100\n\n🌴 Mallorca Edition (5 Tage All-in):\n€410 pro Person / €810 pro Paar\n\n💡 Die ersten 25 Zahlenden beim Cum in May sparen €10 extra.`
+      },
+      {
+        keys: ['wiesbaden', 'cum in may', 'mai', 'may'],
+        answer: `🔥 FriendsFuckFriends – Cum in May\n\n📅 15. Mai 2026, ab 20:00 Uhr\n📍 Wiesbaden (Location nach Anmeldung)\n👥 Ca. 80 handverlesene Gäste\n🎂 Besonderer Geburtstags-Opener\n\n💶 Frauen €45 | Männer €85 | Paare €89\n(€35/€75/€79 für Premium-Mitglieder)`
+      },
+      {
+        keys: ['ulm', 'friendly fucks', 'soft energy'],
+        answer: `🔥 Friendly Fucks – Ulm (Soft Energy Edition)\n\n📅 30. Mai 2026, ab 19:30 Uhr\n📍 Ulm\n👥 Ca. 40 Gäste (bewusst klein & intim)\n🧖 Sauna & Whirlpool inklusive\n🎲 Dare Game Night (optionale Levels)\n\n💶 Frauen €45 | Männer €90 | Paare €100`
+      },
+      {
+        keys: ['mallorca', 'villa', 'urlaub', 'reise', 'woche', 'hot n dirty'],
+        answer: `🌴 F³ Mallorca Edition – Hot'n Dirty Week\n\n📅 18.–23. Juli 2026 (5 Tage)\n📍 Luxusvilla auf Mallorca\n👥 Exklusiv für nur 12 ausgewählte Gäste\n🏊 All-Inclusive Rundum-Erfahrung\n\n💶 €410 p.P. / €810 pro Paar\n(€400/€800 für Premium-Mitglieder)\n\nBewerbung: kurzes Foto + persönliche Zeilen, warum du dabei sein willst.`
+      },
+      {
+        keys: ['wülfrath', 'april', 'nächstes event', 'nächste party'],
+        answer: `🎉 F³ Wülfrath\n\n📅 04. April 2026\n📍 Wülfrath\n\nDetails folgen – jetzt schon auf Joyclub bewerben und keinen Platz verpassen!\n👉 joyclub.de/party/13140845.f3.html`
+      },
+      {
+        keys: ['welche events', 'was gibt es', 'kommende', 'upcoming', 'alle events', 'übersicht'],
+        answer: `Unsere nächsten Events:\n\n📅 04.04.2026 – F³ Wülfrath\n📅 15.05.2026 – Cum in May (Wiesbaden)\n📅 30.05.2026 – Friendly Fucks (Ulm)\n📅 18.–23.07.2026 – Mallorca Edition\n\nAlle Details & Anmeldung auf Joyclub! 🔥`
+      },
+      {
+        keys: ['foto', 'gesichtsfoto', 'bild', 'photo'],
+        answer: `Für die Bewerbung brauchst du ein aktuelles Gesichtsfoto.\n\n📸 Das Foto wird ausschließlich für das Ladies' Voting genutzt und ist nicht öffentlich sichtbar.\n\nOhne Gesichtsfoto ist eine Teilnahme am Voting nicht möglich – das ist ein zentraler Teil des Konzepts.`
+      },
+      {
+        keys: ['safe', 'sicher', 'grenzen', 'nein', 'übergriff', 'sicherheit'],
+        answer: `Bei F³ gilt: Nein ist Nein – immer und ohne Ausnahme. 🛡️\n\nWir haben null Toleranz für Grenzüberschreitungen jeglicher Art. Alle Gäste werden handverlesen, um eine sichere und respektvolle Atmosphäre zu garantieren.\n\nWer sich daneben benimmt, wird dauerhaft ausgeschlossen.`
+      },
+      {
+        keys: ['premium', 'mitglied', 'mitgliedschaft', 'joyclub premium'],
+        answer: `Als Joyclub Premium-Mitglied sparst du bei jedem F³ Event €10 auf den regulären Eintritt.\n\nDie Anmeldung und das Voting laufen immer über Joyclub.de.`
+      },
+      {
+        keys: ['wie viele', 'gäste', 'anzahl', 'größe', 'kapazität', 'teilnehmer'],
+        answer: `F³ setzt bewusst auf kleine, handverlesene Gruppen:\n\n• Wülfrath / Cum in May: ca. 80 Gäste\n• Friendly Fucks Ulm: ca. 40 Gäste\n• Mallorca Edition: exklusiv 12 Gäste\n\nQualität vor Quantität – das ist der F³ Vibe.`
+      },
+      {
+        keys: ['tobias', 'veranstalter', 'organisator', 'wer steckt', 'gründer', 'wer ist'],
+        answer: `F³ wurde von Tobias Kuschel gegründet.\n\n📧 tobi.kuschel@web.de\n📱 Telegram: @Kusc_190190\n🔗 Joyclub: @F_TheNextVibe\n\nBei persönlichen Fragen einfach direkt melden!`
+      },
+      {
+        keys: ['paar', 'paare', 'couple', 'zu zweit', 'mit partner'],
+        answer: `Paare sind bei F³ herzlich willkommen!\n\n👫 Paare nehmen am gleichen Voting-Prozess teil wie Einzelpersonen.\n💶 Paarpreise:\n• Cum in May: €89 (€79 Premium)\n• Friendly Fucks Ulm: €100 (€90 Premium)\n• Mallorca: €810 (€800 Premium)\n\nBeide Partner brauchen ein Foto für das Voting.`
+      },
+      {
+        keys: ['bewertung', 'erfahrung', 'feedback', 'rezension', 'review'],
+        answer: `F³ hat auf Joyclub durchgehend 5 von 5 Sternen! ⭐⭐⭐⭐⭐\n\nÜber 77 Bewertungen – hier ein paar O-Töne:\n\n💬 "Gute Gästeliste, gute Stimmung, gut gefickt – was will man mehr"\n💬 "Top Gäste, Top Orga, Top Stimmung, Top Party"\n💬 "Super Location, coole Leute und definitiv ein unvergesslicher Abend"\n\n👉 Alle Bewertungen: joyclub.de/party/erfahrungen/13140845.f3.html`
+      }
+    ];
+
+    function findAnswer(text) {
+      const lower = text.toLowerCase();
+      for (const entry of kb) {
+        if (entry.keys.some(k => lower.includes(k))) return entry.answer;
+      }
+      return null;
+    }
+
+    function appendMsg(text, type) {
+      const div = document.createElement('div');
+      div.className = `chat-msg ${type}`;
+      div.textContent = text;
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function appendMsgHTML(html, type) {
+      const div = document.createElement('div');
+      div.className = `chat-msg ${type}`;
+      div.innerHTML = html;
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function handleUserMessage(text) {
+      appendMsg(text, 'user');
+      setTimeout(() => {
+        const answer = findAnswer(text);
+        if (answer) {
+          appendMsg(answer, 'bot');
+        } else {
+          appendMsgHTML(
+            `Hmm, darauf habe ich gerade keine gespeicherte Antwort. 🤔\n\nDeine Frage wurde an Tobias weitergeleitet – er meldet sich bei dir!\n\n👉 Oder schreib direkt: <a href="https://t.me/Kusc_190190" target="_blank">@Kusc_190190 auf Telegram</a>`,
+            'bot'
+          );
+          // Telegram fallback link (opens chat with Tobias)
+          const tgUrl = `https://t.me/Kusc_190190?text=${encodeURIComponent('F³ Website Frage: ' + text)}`;
+          const linkDiv = document.createElement('div');
+          linkDiv.className = 'chat-msg bot';
+          linkDiv.innerHTML = `<a href="${tgUrl}" target="_blank" style="display:inline-block;padding:0.5rem 1rem;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.3);border-radius:3px;color:var(--cyan);text-decoration:none;font-size:0.85rem;letter-spacing:0.1em;">💬 Direkt an Tobias schreiben</a>`;
+          chatMessages.appendChild(linkDiv);
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+      }, 400);
+    }
   </script>
 </body>
 </html>
