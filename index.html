@@ -373,20 +373,20 @@
       <p class="section-label">Kommende Nächte</p>
       <h2 class="section-title">Entdecke unsere <span class="gradient-text">Events</span></h2>
     </div>
-    <div class="events-grid">
-      <a href="https://www.joyclub.de/party/13140845.f3.html" target="_blank" class="event-card reveal">
+    <div class="events-grid" id="eventsGrid">
+      <a href="https://www.joyclub.de/party/13140845.f3.html" target="_blank" class="event-card reveal" data-date="2026-04-04">
         <div class="event-date">04.04.2026 · Wülfrath</div>
         <div class="event-title">F³ Wülfrath</div>
         <div class="event-desc">Der nächste Vibe kommt. Bewirb dich jetzt und sicher dir deinen Platz für eine unvergessliche Nacht.</div>
         <span class="event-tag">Coming Soon</span>
       </a>
-      <a href="https://www.joyclub.de/event/1829501.friendsfuckfriends_cum_in_may_wiesbaden.html" target="_blank" class="event-card reveal">
+      <a href="https://www.joyclub.de/event/1829501.friendsfuckfriends_cum_in_may_wiesbaden.html" target="_blank" class="event-card reveal" data-date="2026-05-15">
         <div class="event-date">15.05.2026 · Wiesbaden</div>
         <div class="event-title">Cum in May</div>
         <div class="event-desc">FriendsFuckFriends – Wiesbaden Edition. Ca. 80 handverlesene Gäste, Ladies' Choice Voting, besonderer Geburtstags-Opener. Qualität vor Quantität.</div>
         <span class="event-tag">Wiesbaden</span>
       </a>
-      <a href="https://www.joyclub.de/event/1826058.friendly_fucks.html" target="_blank" class="event-card reveal">
+      <a href="https://www.joyclub.de/event/1826058.friendly_fucks.html" target="_blank" class="event-card reveal" data-date="2026-05-30">
         <div class="event-date">30.05.2026 · Ulm</div>
         <div class="event-title">Friendly Fucks – Ulm</div>
         <div class="event-desc">Soft Energy Edition. Sinnlichkeit, Sauna, Whirlpool und ein kuratierter Abend für ca. 40 Gäste – inklusive Dare Game Night.</div>
@@ -395,7 +395,7 @@
           <span class="event-tag" style="border-color:rgba(0,212,255,0.4);color:var(--cyan);">by Kristina</span>
         </div>
       </a>
-      <a href="https://www.joyclub.de/event/1824056.f_mallorca_edition_hot_n_dirty_week_koeln.html" target="_blank" class="event-card reveal">
+      <a href="https://www.joyclub.de/event/1824056.f_mallorca_edition_hot_n_dirty_week_koeln.html" target="_blank" class="event-card reveal" data-date="2026-07-23">
         <div class="event-date">18.–23.07.2026 · Mallorca</div>
         <div class="event-title">Mallorca Edition</div>
         <div class="event-desc">Hot'n Dirty Week – 5 Tage Luxusvilla auf Mallorca. Exklusiv für 12 ausgewählte Gäste. Friends · Fun · Freedom pur.</div>
@@ -411,6 +411,12 @@
       <span>Archiv anzeigen</span><span class="arrow">▼</span>
     </button>
     <div class="archive-grid" id="archiveGrid">
+      <a href="https://www.joyclub.de/event/1769693.friends_fuck_friends_let_s_cum_together_geheim.html" target="_blank" class="event-card archived">
+        <div class="event-date">25.10.2025 · Wiesbaden</div>
+        <div class="event-title">Let's cum together</div>
+        <div class="event-desc">Friends fuck Friends – Geheim-Event in Wiesbaden. Ca. 50 ausgewählte Gäste, ausverkauft. Der Anfang von etwas Großem.</div>
+        <span class="event-tag past">Abgeschlossen</span>
+      </a>
       <a href="https://www.joyclub.de/event/1797771.friendsfuckfriends_cum_in_2026_frankfurt_am_main.html" target="_blank" class="event-card archived">
         <div class="event-date">31.12.2025 · Frankfurt</div>
         <div class="event-title">Silvester 2025</div>
@@ -837,6 +843,29 @@
       if (e.key === 'ArrowLeft') { lbIdx = (lbIdx - 1 + lbItems.length) % lbItems.length; showLb(); }
       if (e.key === 'Escape') lbOverlay.classList.remove('open');
     });
+
+    // Auto-archive: move past events to archive automatically
+    (function autoArchive() {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const eventsGrid = document.getElementById('eventsGrid');
+      const archiveGrid = document.getElementById('archiveGrid');
+      if (!eventsGrid || !archiveGrid) return;
+      [...eventsGrid.querySelectorAll('.event-card[data-date]')].forEach(card => {
+        const d = new Date(card.dataset.date);
+        d.setHours(0, 0, 0, 0);
+        if (d < today) {
+          card.classList.add('archived');
+          const tag = card.querySelector('.event-tag:not([style])');
+          if (tag) { tag.textContent = 'Abgeschlossen'; tag.classList.add('past'); }
+          archiveGrid.prepend(card);
+        }
+      });
+      // Update archive button count
+      const count = archiveGrid.querySelectorAll('.event-card').length;
+      const btn = document.getElementById('archiveBtn');
+      if (btn) btn.querySelector('span:first-child').textContent = `Archiv anzeigen (${count})`;
+    })();
 
     // Archive toggle
     document.getElementById('archiveBtn').addEventListener('click', function() {
