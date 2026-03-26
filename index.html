@@ -361,10 +361,10 @@
 
   <!-- STATS STRIP -->
   <div class="stats-strip">
-    <div class="strip-item"><span class="strip-num">303</span><span class="strip-lbl">Joyclub Fans</span></div>
-    <div class="strip-item"><span class="strip-num">8.016</span><span class="strip-lbl">Profilbesucher</span></div>
-    <div class="strip-item"><span class="strip-num">77</span><span class="strip-lbl">Bewertungen</span></div>
-    <div class="strip-item"><span class="strip-num">5.0 ★</span><span class="strip-lbl">Ø Bewertung</span></div>
+    <div class="strip-item"><span class="strip-num" id="stat-fans">303</span><span class="strip-lbl">Joyclub Fans</span></div>
+    <div class="strip-item"><span class="strip-num" id="stat-besucher">8.050</span><span class="strip-lbl">Profilbesucher</span></div>
+    <div class="strip-item"><span class="strip-num" id="stat-bewertungen">77</span><span class="strip-lbl">Bewertungen</span></div>
+    <div class="strip-item"><span class="strip-num" id="stat-rating">5.0 ★</span><span class="strip-lbl">Ø Bewertung</span></div>
     <div class="strip-item"><span class="strip-num" id="visit-count">…</span><span class="strip-lbl">Website-Besucher</span></div>
   </div>
 
@@ -890,6 +890,26 @@
     }
 
     loadEvents();
+
+    // Dynamisch JoyClub-Stats laden (via n8n Stats API)
+    async function loadStats() {
+      try {
+        const res = await fetch('https://n8n.f3-events.de/webhook/f3-stats-api', {
+          signal: AbortSignal.timeout(10000)
+        });
+        if (!res.ok) throw new Error('Stats API ' + res.status);
+        const s = await res.json();
+        const fmt = n => n ? n.toLocaleString('de-DE') : null;
+        if (s.fans)        document.getElementById('stat-fans').textContent        = fmt(s.fans);
+        if (s.besucher)    document.getElementById('stat-besucher').textContent    = fmt(s.besucher);
+        if (s.bewertungen) document.getElementById('stat-bewertungen').textContent = fmt(s.bewertungen);
+        if (s.rating)      document.getElementById('stat-rating').textContent      = s.rating.toFixed(1).replace('.', ',') + ' ★';
+      } catch (err) {
+        console.warn('Stats API nicht erreichbar:', err);
+        // Fallback: hardcoded Werte bleiben sichtbar
+      }
+    }
+    loadStats();
 
     // Archive toggle
     document.getElementById('archiveBtn').addEventListener('click', function() {

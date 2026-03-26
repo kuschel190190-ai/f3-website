@@ -1,0 +1,71 @@
+{
+  "name": "F3 Events API",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "f3-events-api",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "projectId": "pu4jkb0uwe4ebev",
+        "table": "mo0qnkmte1sl1mj",
+        "returnAll": true,
+        "where": "(Status,eq,aktiv)",
+        "sort": "EventDatum"
+      },
+      "id": "nocodb-get-events",
+      "name": "NocoDB: Events holen",
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [220, 0],
+      "credentials": {
+        "nocoDb": { "id": "", "name": "NocoDB" }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  const ev = item.json;\n\n  // Datum DD.MM.YYYY → ISO\n  let isoDatum = '';\n  const datumRaw = ev['EventDatum'] || '';\n  const match = datumRaw.match(/(\\d{2})\\.(\\d{2})\\.(\\d{4})/);\n  if (match) isoDatum = `${match[3]}-${match[2]}-${match[1]}`;\n\n  return {\n    json: {\n      name:         ev['EventName'] || '',\n      datum:        datumRaw,\n      isoDatum,\n      beschreibung: ev['Event-Beschreibung'] || '',\n      link:         ev['EventLink'] || '',\n      zusatz:       ev['Wochentag'] || ''\n    }\n  };\n});"
+      },
+      "id": "format-events",
+      "name": "Events formatieren",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $input.all().map(i => i.json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              { "name": "Access-Control-Allow-Origin", "value": "*" }
+            ]
+          }
+        }
+      },
+      "id": "respond",
+      "name": "Antwort senden",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [660, 0]
+    }
+  ],
+  "connections": {
+    "Webhook":              { "main": [[{ "node": "NocoDB: Events holen",  "type": "main", "index": 0 }]] },
+    "NocoDB: Events holen": { "main": [[{ "node": "Events formatieren",    "type": "main", "index": 0 }]] },
+    "Events formatieren":   { "main": [[{ "node": "Antwort senden",        "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "meta": { "templateCredsSetupCompleted": false }
+}

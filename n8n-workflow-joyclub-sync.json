@@ -1,0 +1,239 @@
+{
+  "name": "F3 Joyclub Event-Sync",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 6 * * *" }]
+        }
+      },
+      "id": "schedule",
+      "name": "Täglich 06:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "projectId": "pu4jkb0uwe4ebev",
+        "table": "mmvneegxgeltpav",
+        "returnAll": false,
+        "limit": 1,
+        "where": "(Name,eq,F3-Events)"
+      },
+      "id": "get-cookies",
+      "name": "Cookies aus NocoDB",
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [220, 0],
+      "credentials": { "nocoDb": { "id": "", "name": "NocoDB" } }
+    },
+    {
+      "parameters": {
+        "url": "https://www.joyclub.de/edit/event/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Cookie", "value": "={{ $json.Cookie }}" },
+            { "name": "User-Agent", "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" },
+            { "name": "Accept", "value": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" }
+          ]
+        },
+        "options": { "timeout": 30000 }
+      },
+      "id": "fetch-page",
+      "name": "Joyclub Events-Seite abrufen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $input.first().json.data || $input.first().json;\nconst htmlStr = typeof html === 'string' ? html : JSON.stringify(html);\n\n// Findet alle <a>-Tags mit class=\"event-list-entry\" unabhängig von Attributreihenfolge\nconst anchorRegex = /<a\\s[^>]*class=\"[^\"]*event-list-entry[^\"]*\"[^>]*>[\\s\\S]*?<\\/a>/g;\nconst hrefRegex = /href=\"(https:\\/\\/www\\.joyclub\\.de\\/event\\/(\\d+)\\/[^\"]+)\"/;\nconst nameRegex = /class=\"inner ellipsis headline-status\"[^>]*title=\"([^\"]+)\"/;\nconst dateRegex = /class=\"ela-date[^\"]*\">([^<]+)<\\/span>/;\n\nconst results = [];\nlet match;\n\nwhile ((match = anchorRegex.exec(htmlStr)) !== null) {\n  const block = match[0];\n  const hrefMatch = hrefRegex.exec(block);\n  const nameMatch = nameRegex.exec(block);\n  const dateMatch = dateRegex.exec(block);\n\n  if (!hrefMatch) continue;\n\n  // Abgesagte Events überspringen\n  if (block.includes('>Abgesagt<')) continue;\n\n  const link = hrefMatch[1]; // volle href speichern, nicht rekonstruieren\n  const rawName = nameMatch ? nameMatch[1] : '';\n  const rawDate = dateMatch ? dateMatch[1].trim() : '';\n  const datum = rawDate.replace(/^\\w+\\.?,?\\s*/, '').trim();\n  let isoDatum = '';\n  const dm = datum.match(/(\\d{2})\\.(\\d{2})\\.(\\d{4})/);\n  if (dm) isoDatum = `${dm[3]}-${dm[2]}-${dm[1]}`;\n\n  if (rawName && datum) {\n    results.push({ json: { EventName: rawName, EventDatum: datum, isoDatum, EventLink: link } });\n  }\n}\n\nreturn results.length > 0 ? results : [{ json: { error: 'Keine Events gefunden', htmlLength: htmlStr.length } }];"
+      },
+      "id": "parse-html",
+      "name": "HTML parsen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [{ "id": "no-error", "leftValue": "={{ $json.error }}", "rightValue": "", "operator": { "type": "string", "operation": "empty" } }],
+          "combinator": "and"
+        }
+      },
+      "id": "check-parsed",
+      "name": "Events gefunden?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [880, 0]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "projectId": "pu4jkb0uwe4ebev",
+        "table": "mo0qnkmte1sl1mj",
+        "returnAll": true,
+        "where": "(Status,eq,aktiv)"
+      },
+      "id": "get-nocodb-events",
+      "name": "NocoDB: Aktive Events holen",
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [1100, -100],
+      "credentials": { "nocoDb": { "id": "", "name": "NocoDB" } }
+    },
+    {
+      "parameters": {
+        "jsCode": "const scraped = $('HTML parsen').all().map(i => i.json);\nconst nocodb  = $input.all().map(i => i.json);\n\nconst scrapedLinks = new Set(scraped.map(e => e.EventLink));\nconst nocodbMap    = new Map(nocodb.map(e => [e.EventLink, e]));\n\nconst results = [];\n\n// Neu anlegen (in JoyClub, nicht in NocoDB)\nfor (const ev of scraped) {\n  if (!nocodbMap.has(ev.EventLink)) {\n    results.push({ json: { ...ev, _action: 'create' } });\n  }\n}\n\n// Aktualisieren (in beiden)\nfor (const ev of scraped) {\n  const existing = nocodbMap.get(ev.EventLink);\n  if (existing) {\n    results.push({ json: { ...ev, _action: 'update', _id: existing.Id } });\n  }\n}\n\n// Deaktivieren (in NocoDB, nicht mehr auf JoyClub)\nfor (const ev of nocodb) {\n  if (!scrapedLinks.has(ev.EventLink)) {\n    results.push({ json: { ...ev, _action: 'deactivate', _id: ev.Id } });\n  }\n}\n\nconsole.log(`create: ${results.filter(r=>r.json._action==='create').length}, update: ${results.filter(r=>r.json._action==='update').length}, deactivate: ${results.filter(r=>r.json._action==='deactivate').length}`);\nreturn results;"
+      },
+      "id": "compare",
+      "name": "Vergleichen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1320, -100]
+    },
+    {
+      "parameters": {
+        "chatId": "-1003592524930",
+        "text": "=✅ Joyclub Event-Sync abgeschlossen!\n\n➕ Neu: {{ $input.all().filter(i => i.json._action === 'create').length }}\n🔄 Aktualisiert: {{ $input.all().filter(i => i.json._action === 'update').length }}\n❌ Deaktiviert: {{ $input.all().filter(i => i.json._action === 'deactivate').length }}\n🕐 {{ new Date().toLocaleTimeString('de-DE') }}",
+        "additionalFields": {}
+      },
+      "id": "telegram-success",
+      "name": "Telegram: Erfolg",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1320, 100],
+      "executeOnce": true,
+      "credentials": { "telegramApi": { "id": "", "name": "Telegram" } }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            { "conditions": { "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" }, "conditions": [{ "leftValue": "={{ $json._action }}", "rightValue": "create", "operator": { "type": "string", "operation": "equals" } }], "combinator": "and" } },
+            { "conditions": { "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" }, "conditions": [{ "leftValue": "={{ $json._action }}", "rightValue": "update", "operator": { "type": "string", "operation": "equals" } }], "combinator": "and" } },
+            { "conditions": { "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" }, "conditions": [{ "leftValue": "={{ $json._action }}", "rightValue": "deactivate", "operator": { "type": "string", "operation": "equals" } }], "combinator": "and" } }
+          ]
+        },
+        "options": {}
+      },
+      "id": "route",
+      "name": "Aktion?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [1540, -100]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "projectId": "pu4jkb0uwe4ebev",
+        "table": "mo0qnkmte1sl1mj",
+        "dataMode": "define",
+        "fieldsUi": {
+          "fieldValues": [
+            { "fieldName": "EventName",  "fieldValue": "={{ $json.EventName }}" },
+            { "fieldName": "EventDatum", "fieldValue": "={{ $json.EventDatum }}" },
+            { "fieldName": "EventLink",  "fieldValue": "={{ $json.EventLink }}" },
+            { "fieldName": "Status",     "fieldValue": "aktiv" }
+          ]
+        }
+      },
+      "id": "create-nocodb",
+      "name": "NocoDB: Create",
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [1760, -300],
+      "credentials": { "nocoDb": { "id": "", "name": "NocoDB" } }
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://nocodb.f3-events.de/api/v1/db/data/noco/pu4jkb0uwe4ebev/mo0qnkmte1sl1mj/{{ $json._id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "xc-token", "value": "2l1BhPzXFj_Bb4pv9rKGpBMPZDkzpnKik7biab9-" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ EventName: $json.EventName, EventDatum: $json.EventDatum, Status: 'aktiv' }) }}",
+        "options": {}
+      },
+      "id": "update-event",
+      "name": "NocoDB: Update",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1760, -100]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://nocodb.f3-events.de/api/v1/db/data/noco/pu4jkb0uwe4ebev/mo0qnkmte1sl1mj/{{ $json._id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "xc-token", "value": "2l1BhPzXFj_Bb4pv9rKGpBMPZDkzpnKik7biab9-" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "{\"Status\": \"inaktiv\"}",
+        "options": {}
+      },
+      "id": "deactivate-event",
+      "name": "NocoDB: Deaktivieren",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1760, 100]
+    },
+    {
+      "parameters": {
+        "chatId": "-1003592524930",
+        "text": "=❌ Joyclub Sync fehlgeschlagen!\n\nKeine Events gefunden. HTML-Länge: {{ $json.htmlLength }} Zeichen\nBitte Cookies prüfen.",
+        "additionalFields": {}
+      },
+      "id": "telegram-error",
+      "name": "Telegram: Fehler",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1100, 100],
+      "credentials": { "telegramApi": { "id": "", "name": "Telegram" } }
+    }
+  ],
+  "connections": {
+    "Täglich 06:00":                { "main": [[{ "node": "Cookies aus NocoDB",             "type": "main", "index": 0 }]] },
+    "Cookies aus NocoDB":           { "main": [[{ "node": "Joyclub Events-Seite abrufen",   "type": "main", "index": 0 }]] },
+    "Joyclub Events-Seite abrufen": { "main": [[{ "node": "HTML parsen",                    "type": "main", "index": 0 }]] },
+    "HTML parsen":                  { "main": [[{ "node": "Events gefunden?",               "type": "main", "index": 0 }]] },
+    "Events gefunden?": {
+      "main": [
+        [{ "node": "NocoDB: Aktive Events holen", "type": "main", "index": 0 }],
+        [{ "node": "Telegram: Fehler",            "type": "main", "index": 0 }]
+      ]
+    },
+    "NocoDB: Aktive Events holen": { "main": [[{ "node": "Vergleichen", "type": "main", "index": 0 }]] },
+    "Vergleichen": {
+      "main": [[
+        { "node": "Telegram: Erfolg", "type": "main", "index": 0 },
+        { "node": "Aktion?",          "type": "main", "index": 0 }
+      ]]
+    },
+    "Aktion?": {
+      "main": [
+        [{ "node": "NocoDB: Create",       "type": "main", "index": 0 }],
+        [{ "node": "NocoDB: Update",       "type": "main", "index": 0 }],
+        [{ "node": "NocoDB: Deaktivieren", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "meta": { "templateCredsSetupCompleted": false }
+}

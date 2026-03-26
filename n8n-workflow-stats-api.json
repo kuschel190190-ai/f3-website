@@ -1,0 +1,73 @@
+{
+  "name": "F3 Stats API",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "f3-stats-api",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "url": "https://www.joyclub.de/party/13140845.f3.html",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "User-Agent", "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" },
+            { "name": "Accept", "value": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" },
+            { "name": "Accept-Language", "value": "de-DE,de;q=0.9" }
+          ]
+        },
+        "options": { "timeout": 15000 }
+      },
+      "id": "fetch-profile",
+      "name": "JoyClub Profil abrufen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $input.first().json.data || $input.first().json;\nconst htmlStr = typeof html === 'string' ? html : JSON.stringify(html);\n\n// Hilfsfunktion: deutsche Zahlen parsen (8.050 → 8050)\nconst parseDE = str => parseInt(str.replace(/\\./g, '').replace(/,/g, '.'), 10);\n\n// Fans\nconst fansMatch = htmlStr.match(/(\\d[\\d.]*?)\\s*Fans/);\nconst fans = fansMatch ? parseDE(fansMatch[1]) : null;\n\n// Profilbesucher\nconst besucherMatch = htmlStr.match(/(\\d[\\d.]*?)\\s*Besucher/);\nconst besucher = besucherMatch ? parseDE(besucherMatch[1]) : null;\n\n// Bewertungen\nconst bewMatch = htmlStr.match(/(\\d+)\\s*Bewertungen/);\nconst bewertungen = bewMatch ? parseInt(bewMatch[1], 10) : null;\n\n// Rating\nconst ratingMatch = htmlStr.match(/([\\d,]+)\\s*von\\s*5/);\nconst rating = ratingMatch ? parseFloat(ratingMatch[1].replace(',', '.')) : null;\n\nreturn [{ json: { fans, besucher, bewertungen, rating, updatedAt: new Date().toISOString() } }];"
+      },
+      "id": "parse-stats",
+      "name": "Stats parsen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              { "name": "Access-Control-Allow-Origin", "value": "*" },
+              { "name": "Cache-Control", "value": "public, max-age=3600" }
+            ]
+          }
+        }
+      },
+      "id": "respond",
+      "name": "Antwort senden",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [660, 0]
+    }
+  ],
+  "connections": {
+    "Webhook":                 { "main": [[{ "node": "JoyClub Profil abrufen", "type": "main", "index": 0 }]] },
+    "JoyClub Profil abrufen":  { "main": [[{ "node": "Stats parsen",           "type": "main", "index": 0 }]] },
+    "Stats parsen":            { "main": [[{ "node": "Antwort senden",         "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "meta": { "templateCredsSetupCompleted": false }
+}
