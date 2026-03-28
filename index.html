@@ -896,11 +896,11 @@
         const events = await res.json();
         if (!Array.isArray(events)) throw new Error('Ungültige Antwort');
 
-        // Duplikate entfernen – nach Name gruppieren, Eintrag mit meisten Daten behalten
+        // Duplikate entfernen – nach Name gruppieren, Eintrag mit Bild bevorzugen
         const byName = {};
         events.forEach(ev => {
           const key = ev.name.trim().toLowerCase();
-          if (!byName[key] || (ev.bild || ev.beschreibung || ev.angemeldet) > (byName[key].bild || byName[key].beschreibung || byName[key].angemeldet)) {
+          if (!byName[key] || (!byName[key].bild && ev.bild)) {
             byName[key] = ev;
           }
         });
