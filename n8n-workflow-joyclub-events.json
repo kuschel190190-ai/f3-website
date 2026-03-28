@@ -1,0 +1,92 @@
+{
+  "name": "F3 JoyClub Public Events",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "f3-joyclub-public",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "url": "https://www.joyclub.de/party/veranstaltungen/13140845.f3.html",
+        "options": {
+          "timeout": 15000,
+          "headers": {
+            "parameters": [
+              { "name": "User-Agent", "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" },
+              { "name": "Accept-Language", "value": "de-DE,de;q=0.9" }
+            ]
+          }
+        }
+      },
+      "id": "fetch-upcoming",
+      "name": "JoyClub: Aktuelle Events",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, -80]
+    },
+    {
+      "parameters": {
+        "url": "https://www.joyclub.de/party/veranstaltungen/13140845-archive.f3.html",
+        "options": {
+          "timeout": 15000,
+          "headers": {
+            "parameters": [
+              { "name": "User-Agent", "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" },
+              { "name": "Accept-Language", "value": "de-DE,de;q=0.9" }
+            ]
+          }
+        }
+      },
+      "id": "fetch-archive",
+      "name": "JoyClub: Archiv Events",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 80]
+    },
+    {
+      "parameters": {
+        "jsCode": "// HTML-Parser für JoyClub Eventseiten\nfunction parseEvents(html, isArchive) {\n  const events = [];\n  if (!html) return events;\n\n  // Event-Links extrahieren: href=\"/event/ID.slug.html\"\n  const linkRe = /href=\"(\\/event\\/\\d+\\.[^\"]+\\.html)\"/g;\n  const processed = new Set();\n  let m;\n\n  while ((m = linkRe.exec(html)) !== null) {\n    const path = m[1];\n    if (processed.has(path)) continue;\n    processed.add(path);\n\n    const link = 'https://www.joyclub.de' + path;\n    const idMatch = path.match(/\\/event\\/(\\d+)\\./)\n    const id = idMatch ? idMatch[1] : '';\n\n    // Kontext um den Link (2000 Zeichen)\n    const idx = m.index;\n    const ctx = html.slice(Math.max(0, idx - 500), idx + 1500);\n\n    // Titel: Text im <a>-Tag\n    const titleM = ctx.match(/<a[^>]*href=\"[^\"]*\\/event\\/[^\"]+\"[^>]*>([\\s\\S]*?)<\\/a>/);\n    let name = '';\n    if (titleM) {\n      name = titleM[1].replace(/<[^>]+>/g, '').replace(/\\s+/g, ' ').trim();\n    }\n    if (!name) continue;\n\n    // Datum: z.B. \"Samstag, 15.05.2026\" oder \"15.05.2026\"\n    let datum = '';\n    let isoDatum = '';\n    const datumM = ctx.match(/(\\d{2}\\.\\d{2}\\.\\d{4})/);\n    if (datumM) {\n      datum = datumM[1];\n      const [d, mo, y] = datum.split('.');\n      isoDatum = y + '-' + mo + '-' + d;\n    }\n\n    // Angemeldete: \"X Personen angemeldet\"\n    let angemeldet = 0;\n    const anmM = ctx.match(/(\\d+)\\s+Person(?:en)?\\s+angemeldet/);\n    if (anmM) angemeldet = parseInt(anmM[1]);\n\n    // Ort/Location: Text nach dem Event-Block\n    let ort = '';\n    const ortM = ctx.match(/(?:in|·|@)\\s+([A-ZÄÖÜ][a-zA-ZÄÖÜäöüß\\s\\-]{2,30})(?:<|,|\\n)/);\n    if (ortM) ort = ortM[1].trim();\n\n    events.push({ id, name, datum, isoDatum, link, angemeldet, ort, archiv: isArchive });\n  }\n\n  return events;\n}\n\nconst upcomingHtml = $('JoyClub: Aktuelle Events').item(0)?.json?.data || '';\nconst archiveHtml  = $('JoyClub: Archiv Events').item(0)?.json?.data || '';\n\nconst upcoming = parseEvents(upcomingHtml, false);\nconst archive  = parseEvents(archiveHtml, true);\n\nreturn [{ json: { upcoming, archive, fetchedAt: new Date().toISOString() } }];"
+      },
+      "id": "parse-events",
+      "name": "Events parsen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 0]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              { "name": "Access-Control-Allow-Origin", "value": "*" }
+            ]
+          }
+        }
+      },
+      "id": "respond",
+      "name": "Antwort senden",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [680, 0]
+    }
+  ],
+  "connections": {
+    "Webhook":                   { "main": [[{ "node": "JoyClub: Aktuelle Events", "type": "main", "index": 0 }, { "node": "JoyClub: Archiv Events", "type": "main", "index": 0 }]] },
+    "JoyClub: Aktuelle Events":  { "main": [[{ "node": "Events parsen", "type": "main", "index": 0 }]] },
+    "JoyClub: Archiv Events":    { "main": [[{ "node": "Events parsen", "type": "main", "index": 1 }]] },
+    "Events parsen":             { "main": [[{ "node": "Antwort senden", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "meta": { "templateCredsSetupCompleted": true }
+}

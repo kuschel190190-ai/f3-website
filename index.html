@@ -87,6 +87,9 @@
     .event-stats { display: flex; flex-wrap: wrap; gap: 0.6rem 1.2rem; margin-top: 1rem; padding-top: 0.8rem; border-top: 1px solid rgba(255,255,255,0.06); }
     .event-stat { display: flex; flex-direction: column; align-items: center; gap: 0.1rem; min-width: 36px; }
     .event-stat-val { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; line-height: 1; color: var(--white); }
+    .event-stat-delta { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.05em; }
+    .delta-up { color: #00e676; }
+    .delta-down { color: #ff5252; }
     .event-stat-lbl { font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
 
     /* ARCHIVE */
@@ -319,6 +322,8 @@
     .team-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 0.05em; margin-bottom: 0.3rem; }
     .team-role { font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--pink); margin-bottom: 0.8rem; }
     .team-desc { font-size: 0.9rem; color: var(--muted); line-height: 1.6; }
+    .team-joyclub-link { display: inline-block; margin-top: 1rem; padding: 0.4rem 1rem; font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase; border: 1px solid rgba(233,30,140,0.4); color: var(--pink); border-radius: 2px; text-decoration: none; transition: all 0.3s; }
+    .team-joyclub-link:hover { background: rgba(233,30,140,0.15); box-shadow: 0 0 12px rgba(233,30,140,0.3); }
 
     @media (max-width: 900px) {
       nav { padding: 1rem 1.5rem; }
@@ -631,12 +636,14 @@
         <div class="team-name">Tobias</div>
         <div class="team-role">Gründer · FriendsFuckFriends</div>
         <p class="team-desc">Der Kopf hinter F³. Tobias gründete FriendsFuckFriends mit dem Ziel, Räume zu schaffen, in denen mindestens 80% der Gäste sich untereinander kennen – authentisch, sicher, intensiv.</p>
+        <a href="https://www.joyclub.de/profile/9612457.tojam.html" target="_blank" class="team-joyclub-link">JoyClub Profil →</a>
       </div>
       <div class="team-card reveal">
         <div class="team-avatar" style="background:linear-gradient(135deg,var(--cyan),var(--purple));">💜</div>
         <div class="team-name">Kristina</div>
         <div class="team-role">Rechte Hand · Friendly Fucks</div>
         <p class="team-desc">Kristina kümmert sich um die Friendly Fucks Events. Kleinere, intimere Formate in neuen Städten – unter 50 Gäste, neue Vibes, gleiche Werte. Ihr Herzstück: Ulm und darüber hinaus.</p>
+        <a href="https://www.joyclub.de/profile/9587483.unbenannt.html" target="_blank" class="team-joyclub-link">JoyClub Profil →</a>
       </div>
     </div>
   </section>
@@ -865,15 +872,23 @@
         ? (ev.beschreibung.length > 90 ? ev.beschreibung.slice(0, 90).trimEnd() + '…' : ev.beschreibung)
         : 'Jetzt bewerben und dabei sein.';
       const hasStats = ev.angemeldet || ev.nichtBestaetigt || ev.vorgemerkt || ev.aufrufe || ev.maenner || ev.frauen || ev.paare;
+      function delta(key, val) {
+        if (!val) return '';
+        const prev = (window._f3Yesterday || {})[ev.name + '_' + key];
+        if (prev == null) return '';
+        const diff = val - prev;
+        if (diff === 0) return '';
+        return `<span class="event-stat-delta ${diff > 0 ? 'delta-up' : 'delta-down'}">${diff > 0 ? '+' : ''}${diff}</span>`;
+      }
       const statsHTML = hasStats ? `
         <div class="event-stats">
-          ${ev.angemeldet      ? `<div class="event-stat"><span class="event-stat-val">${ev.angemeldet}</span><span class="event-stat-lbl">Angemeldet</span></div>` : ''}
-          ${ev.nichtBestaetigt ? `<div class="event-stat"><span class="event-stat-val">${ev.nichtBestaetigt}</span><span class="event-stat-lbl">Unbestätigt</span></div>` : ''}
-          ${ev.vorgemerkt      ? `<div class="event-stat"><span class="event-stat-val">${ev.vorgemerkt}</span><span class="event-stat-lbl">Vorgemerkt</span></div>` : ''}
-          ${ev.aufrufe         ? `<div class="event-stat"><span class="event-stat-val" style="color:var(--cyan)">${ev.aufrufe}</span><span class="event-stat-lbl">Aufrufe</span></div>` : ''}
-          ${ev.maenner         ? `<div class="event-stat"><span class="event-stat-val">${ev.maenner}</span><span class="event-stat-lbl">Männer</span></div>` : ''}
-          ${ev.frauen          ? `<div class="event-stat"><span class="event-stat-val">${ev.frauen}</span><span class="event-stat-lbl">Frauen</span></div>` : ''}
-          ${ev.paare           ? `<div class="event-stat"><span class="event-stat-val">${ev.paare}</span><span class="event-stat-lbl">Paare</span></div>` : ''}
+          ${ev.angemeldet      ? `<div class="event-stat"><span class="event-stat-val">${ev.angemeldet}</span>${delta('angemeldet',ev.angemeldet)}<span class="event-stat-lbl">Angemeldet</span></div>` : ''}
+          ${ev.nichtBestaetigt ? `<div class="event-stat"><span class="event-stat-val">${ev.nichtBestaetigt}</span>${delta('nichtBestaetigt',ev.nichtBestaetigt)}<span class="event-stat-lbl">Unbestätigt</span></div>` : ''}
+          ${ev.vorgemerkt      ? `<div class="event-stat"><span class="event-stat-val">${ev.vorgemerkt}</span>${delta('vorgemerkt',ev.vorgemerkt)}<span class="event-stat-lbl">Vorgemerkt</span></div>` : ''}
+          ${ev.aufrufe         ? `<div class="event-stat"><span class="event-stat-val" style="color:var(--cyan)">${ev.aufrufe}</span>${delta('aufrufe',ev.aufrufe)}<span class="event-stat-lbl">Aufrufe</span></div>` : ''}
+          ${ev.maenner         ? `<div class="event-stat"><span class="event-stat-val">${ev.maenner}</span>${delta('maenner',ev.maenner)}<span class="event-stat-lbl">Männer</span></div>` : ''}
+          ${ev.frauen          ? `<div class="event-stat"><span class="event-stat-val">${ev.frauen}</span>${delta('frauen',ev.frauen)}<span class="event-stat-lbl">Frauen</span></div>` : ''}
+          ${ev.paare           ? `<div class="event-stat"><span class="event-stat-val">${ev.paare}</span>${delta('paare',ev.paare)}<span class="event-stat-lbl">Paare</span></div>` : ''}
         </div>` : '';
       const bildStyle = ev.bild ? ` style="background-image:url('${ev.bild}')"` : '';
       const bildClass = ev.bild ? ' has-bild' : '';
@@ -951,6 +966,31 @@
         autoArchive();
       }
     }
+
+    // ── Gestern/Heute Delta via localStorage ──────────────────────────────────
+    (function initDelta() {
+      const todayKey     = 'f3stats_' + new Date().toISOString().split('T')[0];
+      const yesterdayKey = 'f3stats_' + new Date(Date.now() - 86400000).toISOString().split('T')[0];
+      try {
+        const yData = localStorage.getItem(yesterdayKey);
+        window._f3Yesterday = yData ? JSON.parse(yData) : null;
+      } catch(e) { window._f3Yesterday = null; }
+
+      // Nach loadEvents: heutige Werte speichern
+      const _origLoad = loadEvents;
+      loadEvents = async function() {
+        await _origLoad();
+        try {
+          const snap = {};
+          (window._f3Events || []).forEach(ev => {
+            ['angemeldet','nichtBestaetigt','vorgemerkt','aufrufe','maenner','frauen','paare'].forEach(k => {
+              if (ev[k]) snap[ev.name + '_' + k] = ev[k];
+            });
+          });
+          localStorage.setItem(todayKey, JSON.stringify(snap));
+        } catch(e) {}
+      };
+    })();
 
     loadEvents();
 
@@ -1076,16 +1116,16 @@
         answer: `Das F³ Team:\n\n🔥 Tobias – Gründer & Kopf von FriendsFuckFriends\nMindestens 80% der Gäste kennen sich, ca. 80 Gäste, das Original.\n\n💜 Kristina – Rechte Hand, leitet Friendly Fucks\nKleinere, intimere Events in neuen Städten (unter 50 Gäste). Ihr Herzstück: Ulm und darüber hinaus.`
       },
       {
-        keys: ['unterschied', 'friendly fucks', 'friendsfuckfriends', 'format', 'unterschied zwischen'],
-        answer: `Der Unterschied:\n\n🔥 FriendsFuckFriends (Tobias) – das Herzstück\n• Gewachsen auf über 100 Gäste\n• Mindestens 80% kennen sich persönlich\n• Ladies' Voting, kuratierte Gästeliste\n• Das Original-Format\n• z.B. Wiesbaden, Wülfrath\n\n💜 Friendly Fucks (Kristina)\n• Unter 50 Gäste – bewusst klein & intim\n• Neue Städte & Locations erkunden\n• Sauna, Whirlpool, Dare Game Night\n• z.B. Ulm\n\nBeide Formate: keine Massenabfertigung, kuratierte Gästelisten, Respekt & Consent, authentischer Vibe.\nGleiche Werte – verschiedene Größen!`
+        keys: ['unterschied', 'friendly fucks', 'friendsfuckfriends', 'format', 'unterschied zwischen', 'welches format', 'was ist fff', 'was ist ff'],
+        answer: `Die zwei F³-Formate im Vergleich:\n\n🔥 FriendsFuckFriends (Tobias)\n→ Das Herzstück – das Original\n• Über 100 Gäste, gewachsen seit Anfang 2025\n• Mindestens 80% kennen sich persönlich\n• Ladies' Choice Voting für Männer & Paare\n• Handverlesene Gästeliste, größeres Format\n• Locations: Wiesbaden, Wülfrath u.a.\n• Vibe: vertraute Community, intensiv, authentisch\n\n💜 Friendly Fucks (Kristina)\n→ Das Schwesterformat – kleiner & intimer\n• Unter 50 Gäste – bewusst überschaubar\n• Neue Städte & Locations erkunden\n• Sauna, Whirlpool, Dare Game Night (opt. Levels)\n• Locations: Ulm und weitere\n• Vibe: soft energy, neue Gesichter, gleiche Werte\n\n✅ Was beide teilen:\nKeine Massenabfertigung · Kuratierte Gästeliste\nRespekt & Consent · Safe Space · Authentischer Vibe\n\nGleiche Werte – verschiedene Größen & Energien!`
       },
       {
         keys: ['voting kanal', 'voting regeln', 'screenshot', 'diskret', 'vertraulich'],
         answer: `Voting-Kanal Regeln:\n\n🔒 Was im Kanal besprochen wird, bleibt im Kanal.\n📵 Keine Screenshots, keine Namen nach außen.\n🔗 Der Einladungslink ist persönlich – nicht weitergeben.\n✅ Entscheidungen der Gruppe sind bindend.\n🚫 Ein Nein braucht keine Erklärung – No means No.\n\nDer Kanal ist ein moderierter Vertrauensraum.`
       },
       {
-        keys: ['gesundheit', 'testen', 'test', 'sti', 'gesundheitsamt', 'sam health', 'positiv', 'ergebnis', 'befund'],
-        answer: `Gesundheit & Verantwortung bei F³:\n\n🩺 Regelmäßiges Testen (alle 3–6 Monate) ist Teil unserer Community – je nach Häufigkeit auch alle 3 Monate.\n\nKostenlose Optionen:\n• Gesundheitsamt – kostenlos & anonym\n• S.A.M. Health (Aidshilfe) – diskret\n\n📋 Bei einem positiven Ergebnis:\nKontaktiere die betroffenen Personen direkt – sachlich, respektvoll und diskret.\nKeine Massenbenachrichtigungen, keine Weitergabe über Dritte, keine öffentlichen Diskussionen.\n\nRespekt endet nicht auf der Tanzfläche. 🖤`
+        keys: ['gesundheit', 'testen', 'test', 'sti', 'gesundheitsamt', 'sam health', 'positiv', 'ergebnis', 'befund', 'kondome', 'sicher sex', 'safer sex'],
+        answer: `Gesundheit & Verantwortung bei F³ 🖤\n\nRegelmäßiges Testen ist kein Extra – es ist Teil unserer Community und ein Akt gegenseitigen Respekts.\n\n🗓 Wie oft testen?\n• Mindestens alle 6 Monate\n• Bei häufigeren Events: alle 3 Monate empfohlen\n\n🏥 Kostenlos & anonym:\n• Gesundheitsamt (kostenlos & anonym)\n• S.A.M. Health / Aidshilfe (diskret)\n\n📋 Bei einem positiven Ergebnis:\n→ Betroffene Personen DIREKT kontaktieren – sachlich, respektvoll, diskret\n→ Keine Massenbenachrichtigungen\n→ Keine Weitergabe über Dritte\n→ Keine öffentlichen Diskussionen\n\nDas ist Community-Schutz – nicht Schande. Respekt endet nicht auf der Tanzfläche.`
       },
       {
         keys: ['galerie', 'fotos', 'bilder', 'album', 'impressionen'],
