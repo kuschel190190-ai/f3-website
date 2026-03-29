@@ -4,8 +4,24 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>F³ – The Next Vibe</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script>
+    // Cache-Buster: bei neuem Deploy automatisch Hard-Reload
+    fetch('/version.json?t=' + Date.now(), { cache: 'no-store' })
+      .then(r => r.json())
+      .then(d => {
+        const stored = localStorage.getItem('f3_deploy_v');
+        if (stored && stored !== d.v) { localStorage.setItem('f3_deploy_v', d.v); location.reload(true); }
+        else localStorage.setItem('f3_deploy_v', d.v);
+        // Commit in Navbar anzeigen
+        const el = document.getElementById('nav-commit');
+        if (el && d.v) el.textContent = d.v.substring(0,7);
+      }).catch(() => {});
+  </script>
   <style>
     :root {
       --black: #060608;
@@ -37,6 +53,7 @@
     .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.85rem; letter-spacing: 0.2em; text-transform: uppercase; transition: color 0.3s; font-weight: 500; }
     .nav-links a:hover { color: var(--cyan); text-shadow: 0 0 10px var(--cyan); }
     .nav-cta { padding: 0.6rem 1.8rem; border: 1px solid var(--pink) !important; color: var(--pink) !important; border-radius: 2px; }
+    .nav-commit { font-size: 0.62rem; color: rgba(106,101,128,0.6); letter-spacing: 0.1em; font-family: monospace; padding: 0.2rem 0.5rem; border: 1px solid rgba(106,101,128,0.2); border-radius: 2px; cursor: default; }
     .nav-cta:hover { background: rgba(233,30,140,0.15) !important; box-shadow: 0 0 20px rgba(233,30,140,0.4) !important; text-shadow: none !important; }
 
     .hero {
@@ -353,6 +370,7 @@
       <li><a href="#concept">Konzept</a></li>
       <li><a href="#process">Bewerbung</a></li>
       <li><a href="https://www.joyclub.de/party/13140845.f3.html" target="_blank" class="nav-cta">Joyclub</a></li>
+      <li><span class="nav-commit" id="nav-commit" title="Deployment-Stand">…</span></li>
     </ul>
   </nav>
 
