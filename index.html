@@ -976,44 +976,57 @@
     }
 
     async function loadEvents() {
-      const grid = document.getElementById('eventsGrid');
+      const grid      = document.getElementById('eventsGrid');
       const archiveGrid = document.getElementById('archiveGrid');
-      try {
-        const res = await fetch('https://n8n.f3-events.de/webhook/f3-events-api', {
-          signal: AbortSignal.timeout(8000)
-        });
-        if (!res.ok) throw new Error('API ' + res.status);
-        const events = await res.json();
-        if (!Array.isArray(events)) throw new Error('Ungültige Antwort');
+      const CACHE_KEY = 'f3_events_cache';
+      const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 Stunden
 
-        // Duplikate entfernen – nach Name gruppieren, Eintrag mit Bild bevorzugen
+      // Adapter: JoyClub-Public-Format → internes Format
+      function adaptPublic(ev, isArchiv) {
+        return {
+          name: ev.name || '', datum: ev.datum || '', isoDatum: ev.isoDatum || '',
+          status: isArchiv ? 'inaktiv' : 'aktiv',
+          beschreibung: '', link: ev.link || '', zusatz: ev.ort || '', bild: '',
+          angemeldet: ev.angemeldet || 0,
+          nichtBestaetigt: 0, vorgemerkt: 0, aufrufe: 0, maenner: 0, frauen: 0, paare: 0
+        };
+      }
+
+      function readCache() {
+        try {
+          const raw = localStorage.getItem(CACHE_KEY);
+          if (!raw) return null;
+          const { ts, data } = JSON.parse(raw);
+          return (Date.now() - ts < CACHE_TTL) ? data : null;
+        } catch(e) { return null; }
+      }
+
+      function writeCache(events) {
+        try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data: events })); } catch(e) {}
+      }
+
+      function renderEvents(events) {
+        const today = new Date(); today.setHours(0,0,0,0);
+        // Duplikate: nach Name, Eintrag mit Bild bevorzugen
         const byName = {};
         events.forEach(ev => {
-          const key = ev.name.trim().toLowerCase();
-          if (!byName[key] || (!byName[key].bild && ev.bild)) {
-            byName[key] = ev;
-          }
+          const key = (ev.name||'').trim().toLowerCase();
+          if (!byName[key] || (!byName[key].bild && ev.bild)) byName[key] = ev;
         });
         const unique = Object.values(byName);
-
-        // Für Chatbot speichern
         window._f3Events = unique;
-
-        const today = new Date(); today.setHours(0,0,0,0);
 
         const upcoming = unique.filter(ev => {
           if (ev.status === 'inaktiv') return false;
           if (!ev.isoDatum) return true;
           return new Date(ev.isoDatum) >= today;
         });
-
         const archive = unique.filter(ev => {
           if (ev.status === 'inaktiv') return true;
           if (!ev.isoDatum) return false;
           return new Date(ev.isoDatum) < today;
         });
 
-        // Kommende Events anzeigen
         if (upcoming.length === 0) {
           grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--muted);padding:2rem;">Aktuell keine Events geplant. <a href="https://www.joyclub.de/party/13140845.f3.html" target="_blank" style="color:var(--pink);">Joyclub besuchen →</a></p>';
         } else {
@@ -1023,23 +1036,48 @@
           }, { threshold: 0.1 });
           grid.querySelectorAll('.event-card').forEach(c => obs.observe(c));
         }
-
-        // Vergangene/inaktive Events dynamisch ins Archiv einfügen (vor den hardcodierten)
         if (archive.length > 0) {
-          const archiveHTML = archive.map(ev => buildEventCard(ev, 'archived')).join('');
-          archiveGrid.insertAdjacentHTML('afterbegin', archiveHTML);
+          archiveGrid.insertAdjacentHTML('afterbegin', archive.map(ev => buildEventCard(ev, 'archived')).join(''));
         }
-
-        // Archiv-Button-Zähler aktualisieren
         const count = archiveGrid.querySelectorAll('.event-card').length;
         const btn = document.getElementById('archiveBtn');
         if (btn) btn.querySelector('span:first-child').textContent = `Archiv anzeigen (${count})`;
-
-      } catch (err) {
-        console.warn('Events API nicht erreichbar:', err);
-        grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--muted);padding:2rem;">Events konnten nicht geladen werden. <a href="https://www.joyclub.de/party/13140845.f3.html" target="_blank" style="color:var(--pink);">Direkt auf Joyclub ansehen →</a></p>';
-        autoArchive();
+        writeCache(unique);
       }
+
+      // 1) NocoDB-basierte Events API
+      try {
+        const res = await fetch('https://n8n.f3-events.de/webhook/f3-events-api', { signal: AbortSignal.timeout(6000) });
+        if (!res.ok) throw new Error(res.status);
+        const events = await res.json();
+        if (Array.isArray(events) && events.length > 0) { renderEvents(events); return; }
+        throw new Error('leer');
+      } catch(e1) { console.warn('Events-API (NocoDB):', e1.message); }
+
+      // 2) JoyClub Public Scraper – kein NocoDB nötig
+      try {
+        const res = await fetch('https://n8n.f3-events.de/webhook/f3-joyclub-public', { signal: AbortSignal.timeout(12000) });
+        if (!res.ok) throw new Error(res.status);
+        const d = await res.json();
+        const combined = [
+          ...(d.upcoming || []).map(e => adaptPublic(e, false)),
+          ...(d.archive  || []).map(e => adaptPublic(e, true))
+        ];
+        if (combined.length > 0) { renderEvents(combined); return; }
+        throw new Error('leer');
+      } catch(e2) { console.warn('Events-API (Public):', e2.message); }
+
+      // 3) localStorage-Cache (bis 6 h alt)
+      const cached = readCache();
+      if (cached && cached.length > 0) {
+        console.info('Events aus Cache:', cached.length);
+        renderEvents(cached);
+        return;
+      }
+
+      // 4) Alles fehlgeschlagen
+      grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--muted);padding:2rem;">Events konnten nicht geladen werden. <a href="https://www.joyclub.de/party/13140845.f3.html" target="_blank" style="color:var(--pink);">Direkt auf Joyclub ansehen →</a></p>';
+      autoArchive();
     }
 
     // ── Gestern/Heute Delta via localStorage ──────────────────────────────────
