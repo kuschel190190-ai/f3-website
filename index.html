@@ -801,7 +801,8 @@
     </div>
     <span id="music-label">F³ Vibe</span>
   </div>
-  <audio id="bg-audio" loop></audio>
+  <!-- YouTube Hintergrundplayer (versteckt) -->
+  <div id="yt-player" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;overflow:hidden;top:-9999px;left:-9999px;"></div>
 
   <!-- CHATBOT WIDGET -->
   <button id="chat-btn" aria-label="Chat öffnen">
@@ -1312,68 +1313,69 @@
         }
       }, 400);
     }
-    // ── Musik-Player ──────────────────────────────────────────────────────────
-    // Audio-URL hier eintragen (MP3/OGG/AAC – lokal oder CDN):
-    const MUSIC_SRC = '';
-
+    // ── Musik-Player (YouTube: ToJam – Die Nacht wird hart) ──────────────────
     (function initMusicPlayer() {
-      const player  = document.getElementById('music-player');
-      const toggle  = document.getElementById('music-toggle');
-      const bars    = document.getElementById('music-bars');
-      const label   = document.getElementById('music-label');
-      const audio   = document.getElementById('bg-audio');
+      const playerEl = document.getElementById('music-player');
+      const toggle   = document.getElementById('music-toggle');
+      const bars     = document.getElementById('music-bars');
+      const label    = document.getElementById('music-label');
+      const VIDEO_ID = 'L8fvcbnHKK4';
+      let ytPlayer, activated = false;
 
-      if (!MUSIC_SRC) return; // kein Track konfiguriert → Player ausblenden
-      audio.src = MUSIC_SRC;
-      audio.volume = 0.35;
-
-      function setPlaying(playing) {
-        toggle.textContent = playing ? '⏸' : '▶';
-        bars.classList.toggle('paused', !playing);
+      function setPlaying(on) {
+        toggle.textContent = on ? '⏸' : '▶';
+        bars.classList.toggle('paused', !on);
       }
 
-      function tryPlay() {
-        return audio.play().catch(() => {});
-      }
-
-      // 1) Muted-Autoplay (alle Browser erlauben das)
-      audio.muted = true;
-      tryPlay().then(() => {
-        setPlaying(true);
-        label.textContent = '🔇 Klick zum Unmuten';
-        player.classList.add('music-notify');
-      }).catch(() => {
-        // 2) Vollständig geblockt → auf erste Nutzer-Interaktion warten
-        label.textContent = 'Klick zum Starten';
-        player.classList.add('music-notify');
-      });
-
-      // Beim ersten Klick irgendwo unmuten / starten
-      let activated = false;
-      document.addEventListener('click', function activate() {
+      function activate() {
         if (activated) return;
         activated = true;
-        audio.muted = false;
-        if (audio.paused) tryPlay();
-        label.textContent = 'F³ Vibe';
-        player.classList.remove('music-notify');
+        if (ytPlayer && ytPlayer.unMute) { ytPlayer.unMute(); ytPlayer.setVolume(40); }
+        label.textContent = 'Die Nacht wird hart';
+        playerEl.classList.remove('music-notify');
         document.removeEventListener('click', activate);
-      });
+      }
 
-      // Toggle-Button: Play/Pause (Klick stoppt Propagation damit activate nicht feuert)
-      toggle.addEventListener('click', e => {
+      // YouTube IFrame API dynamisch laden
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+
+      window.onYouTubeIframeAPIReady = function() {
+        ytPlayer = new YT.Player('yt-player', {
+          videoId: VIDEO_ID,
+          playerVars: {
+            autoplay: 1, loop: 1, playlist: VIDEO_ID,
+            mute: 1, controls: 0, showinfo: 0,
+            rel: 0, modestbranding: 1, iv_load_policy: 3
+          },
+          events: {
+            onReady: function(e) {
+              e.target.mute();
+              e.target.playVideo();
+              setPlaying(true);
+              label.textContent = '🔇 Klick zum Unmuten';
+              playerEl.classList.add('music-notify');
+            },
+            onStateChange: function(e) {
+              if (e.data === YT.PlayerState.PLAYING) setPlaying(true);
+              else if (e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.ENDED) setPlaying(false);
+            }
+          }
+        });
+      };
+
+      // Erster Klick irgendwo → unmuten
+      document.addEventListener('click', activate);
+
+      // Toggle-Button
+      toggle.addEventListener('click', function(e) {
         e.stopPropagation();
-        activated = true;
-        audio.muted = false;
-        player.classList.remove('music-notify');
-        label.textContent = 'F³ Vibe';
-        if (audio.paused) { tryPlay(); }
-        else { audio.pause(); }
-        document.removeEventListener('click', document._musicActivate);
+        activate();
+        if (!ytPlayer || ytPlayer.getPlayerState == null) return;
+        if (ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) ytPlayer.pauseVideo();
+        else ytPlayer.playVideo();
       });
-
-      audio.addEventListener('play',  () => setPlaying(true));
-      audio.addEventListener('pause', () => setPlaying(false));
     })();
   </script>
 </body>
